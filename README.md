@@ -30,7 +30,6 @@ A modern, multilingual platform built with Node.js/Express backend and EJS front
 - **📍 Real-time Tracking**: Live location sharing between client and worker during service
 - **💳 Payment Processing**: Demo payment system after service completion
 - **📱 Mobile Responsive**: Fully responsive design for all device sizes
-- **🌐 Multilingual**: Support for English, Hindi, and Marathi languages
 - **🎨 UI Refresh**: Completely redesigned user interface with modern styling while maintaining the light orange color palette
 - **📏 Size Adjustments**: Updated typography, button sizes, card layouts, and spacing for improved visual hierarchy
 - **✨ Enhanced Visual Design**: Refined navigation, forms, and dashboard layouts for better user experience
