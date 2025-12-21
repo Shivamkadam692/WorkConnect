@@ -1,0 +1,170 @@
+// load custom env object (dotenv populated) so the project can access a separate env map
+const customEnv = require('./config/env');
+const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
+const bodyParser = require('body-parser');
+const methodOverride = require('method-override');
+const session = require('express-session');
+const MongoStore = require('connect-mongo');
+const connectDB = require('./config/db');
+const expressLayouts = require('express-ejs-layouts');
+const flash = require('connect-flash');
+
+
+const workerRoutes = require('./routes/workerRoutes');
+const serviceRoutes = require('./routes/serviceRoutes');
+const authRoutes = require('./routes/authRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
+
+const profileRoutes = require('./routes/profileRoutes');
+
+
+const { requireLogin } = require('./middleware/auth');
+const errorHandler = require('./middleware/errorHandler');
+const homeController = require('./controllers/homeController');
+
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server, { cors: { origin: '*' } });
+
+// Make io globally available for notification service
+global.io = io;
+
+connectDB();
+
+// Middleware
+app.use(expressLayouts);
+app.set('layout', 'layout');
+app.set('view engine', 'ejs');
+app.use(express.static('public'));
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use(methodOverride('_method'));
+
+// Session config
+app.use(session({
+  secret: customEnv.SESSION_SECRET || process.env.SESSION_SECRET || 'vahak-secret',
+  resave: false,
+  saveUninitialized: false,
+  store: MongoStore.create({ mongoUrl: customEnv.MONGODB_URI || process.env.MONGODB_URI || '' }),
+  cookie: { 
+    // Session will persist until user explicitly logs out
+    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days in milliseconds
+    httpOnly: true, // Prevents XSS attacks
+    secure: process.env.NODE_ENV === 'production', // Only use secure cookies in production
+    sameSite: 'lax' // Protects against CSRF attacks
+  }
+}));
+
+// Flash messages middleware
+app.use(flash());
+
+// Pass user and flash messages to all views
+app.use(async (req, res, next) => {
+  res.locals.user = null;
+  res.locals.success = req.flash('success');
+  res.locals.error = req.flash('error');
+  if (req.session.userId) {
+    const User = require('./models/User');
+    res.locals.user = await User.findById(req.session.userId);
+  }
+  next();
+});
+
+// Routes
+app.get('/', homeController.getHome);
+app.get('/search', homeController.search);
+
+
+app.use('/workers', workerRoutes);
+app.use('/services', serviceRoutes);
+app.use('/auth', authRoutes);
+app.use('/dashboard', dashboardRoutes);
+app.use('/payments', paymentRoutes);
+// app.use('/notifications', notificationRoutes);
+
+app.use('/profile', profileRoutes);
+
+
+
+// Public static pages used by the footer
+app.get('/about', (req, res) => res.render('about'));
+app.get('/terms', (req, res) => res.render('terms'));
+app.get('/privacy', (req, res) => res.render('privacy'));
+app.get('/contact', (req, res) => res.render('contact'));
+app.get('/favicon.ico', (req, res) => res.status(204).end());
+// Ignore Chrome DevTools probe requests
+app.get('/.well-known/appspecific/com.chrome.devtools.json', (req, res) => {
+  res.status(204).end(); // No Content
+});
+
+// 404 handler for undefined routes
+app.use((req, res, next) => {
+  // Log unmatched route for debugging
+  console.warn(`404 Not Found: ${req.method} ${req.originalUrl}`);
+  const err = new Error('Not Found');
+  err.statusCode = 404;
+  next(err);
+});
+
+// Global error handler
+app.use(errorHandler);
+
+// Socket.IO real-time tracking and notifications
+io.on('connection', (socket) => {
+  // Join user's personal room for notifications
+  socket.on('joinUser', (userId) => {
+    if (userId) {
+      socket.join(`user_${userId}`);
+    }
+  });
+
+  // Join tracking room
+  socket.on('join', ({ requestId }) => {
+    if (requestId) {
+      socket.join(requestId);
+    }
+  });
+
+  // Leave tracking room
+  socket.on('leave', ({ requestId }) => {
+    if (requestId) {
+      socket.leave(requestId);
+    }
+  });
+
+  socket.on('locationUpdate', async ({ requestId, role, lat, lng }) => {
+    try {
+      if (!requestId || lat == null || lng == null) return;
+      const update = role === 'client'
+        ? { clientLocation: { lat, lng, updatedAt: new Date() }, trackingActiveClient: true }
+        : { workerLocation: { lat, lng, updatedAt: new Date() }, trackingActiveWorker: true };
+      await Request.findByIdAndUpdate(requestId, update);
+      io.to(requestId).emit('locationUpdate', { role, lat, lng, updatedAt: Date.now() });
+    } catch (e) {
+      console.error('Location update error:', e);
+    }
+  });
+
+  socket.on('stopTracking', async ({ requestId, role }) => {
+    try {
+      if (!requestId) return;
+      const update = role === 'client'
+        ? { trackingActiveClient: false }
+        : { trackingActiveWorker: false };
+      await Request.findByIdAndUpdate(requestId, update);
+    } catch (e) {
+      console.error('Stop tracking error:', e);
+    }
+  });
+
+  socket.on('disconnect', () => {
+    // User disconnected
+  });
+});
+
+const PORT = customEnv.PORT || process.env.PORT || 3000;
+server.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));

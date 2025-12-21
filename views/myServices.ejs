@@ -1,0 +1,56 @@
+<div class="dashboard-header">
+  <h1>My Service Requests</h1>
+  <p>Manage your service requests and services.</p>
+</div>
+
+<div class="action-bar">
+  <a href="/services/add" class="btn btn-primary">
+    <i class="fas fa-plus-circle"></i> Add New Service
+  </a>
+</div>
+
+<% if (services && services.length > 0) { %>
+  <div class="card-container">
+    <% services.forEach(service => { %>
+      <div class="card">
+        <div class="card-header">
+          <h3><%= service.serviceType %></h3>
+          <span class="status-badge <%= service.status %>"<%= service.status %></span>
+        </div>
+        <div class="card-body">
+          <div class="card-item">
+            <i class="fas fa-map-marker-alt"></i>
+            <span><strong>Location:</strong> <%= service.location %></span>
+          </div>
+          <div class="card-item">
+            <i class="fas fa-tools"></i>
+            <span><strong>Skills Required:</strong> <%= service.skillsRequired ? service.skillsRequired.join(', ') : 'N/A' %></span>
+          </div>
+          <div class="card-item">
+            <i class="fas fa-clock"></i>
+            <span><strong>Duration:</strong> <%= service.duration || 'Flexible' %> hours</span>
+          </div>
+          <div class="card-item">
+            <i class="fas fa-calendar-alt"></i>
+            <span><strong>Date:</strong> <%= service.dateTime ? new Date(service.dateTime).toLocaleDateString() : 'Flexible' %></span>
+          </div>
+        </div>
+        <div class="card-footer">
+          <a href="/services/<%= service._id %>" class="btn btn-sm">
+            <i class="fas fa-eye"></i> View
+          </a>
+          <a href="/services/<%= service._id %>/edit" class="btn btn-sm btn-outline">
+            <i class="fas fa-edit"></i> Edit
+          </a>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+<% } else { %>
+  <div class="empty-state">
+    <i class="fas fa-briefcase fa-3x"></i>
+    <h3>No services yet</h3>
+    <p>Create your first service request to start connecting with professionals.</p>
+    <a href="/services/add" class="btn btn-primary">Add Your First Service</a>
+  </div>
+<% } %>

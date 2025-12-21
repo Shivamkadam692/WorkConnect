@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Primary Meta Tags -->
+  <title>WorkConnect | Professional Services Platform - Connect Clients & Workers</title>
+  <meta name="title" content="WorkConnect | Professional Services Platform - Connect Clients & Workers">
+  <meta name="description" content="WorkConnect is a modern professional services platform connecting clients and workers across India. Find professionals, book services, and manage projects in real-time.">
+  <meta name="keywords" content="professional services, consulting, workers, clients, project management, expert booking, services platform, India professionals">
+  <meta name="author" content="WorkConnect">
+  <meta name="robots" content="index, follow">
+  <meta name="language" content="English">
+  <meta name="revisit-after" content="7 days">
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="<%= typeof baseUrl !== 'undefined' ? baseUrl : 'https://workconnect.com' %>">
+  <meta property="og:title" content="WorkConnect | Professional Services Platform">
+  <meta property="og:description" content="Connect clients and workers across India. Find professionals, book services, and manage projects in real-time.">
+  <meta property="og:image" content="<%= typeof baseUrl !== 'undefined' ? baseUrl : 'https://workconnect.com' %>/og-image.jpg">
+  
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="<%= typeof baseUrl !== 'undefined' ? baseUrl : 'https://workconnect.com' %>">
+  <meta property="twitter:title" content="WorkConnect | Professional Services Platform">
+  <meta property="twitter:description" content="Connect clients and workers across India. Find professionals, book services, and manage projects in real-time.">
+  <meta property="twitter:image" content="<%= typeof baseUrl !== 'undefined' ? baseUrl : 'https://workconnect.com' %>/og-image.jpg">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  
+  <!-- Canonical URL -->
+  <link rel="canonical" href="<%= typeof canonicalUrl !== 'undefined' ? canonicalUrl : '' %>">
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="/style-modern.css">
+  <link rel="stylesheet" href="/card-styles.css">
+  
+  <!-- Preconnect for performance -->
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+</head>
+<body<% if (user) { %> data-user-id="<%= user._id %>" data-user-role="<%= user.role %>"<% } %>>
+  <header>
+    <nav>
+      <a href="/" class="logo">Work<span>Connect</span></a>
+      
+      <!-- Language Selector -->
+      <div class="language-selector">
+        <button class="language-btn" id="languageBtn" aria-label="Select Language">
+          <i class="fas fa-globe"></i>
+          <span id="currentLanguage">English</span>
+          <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="language-dropdown" id="languageDropdown">
+          <!-- Language options will be generated dynamically -->
+        </div>
+      </div>
+      
+      <ul class="nav-links" id="mobile-nav" tabindex="-1" aria-hidden="true" role="navigation" aria-label="Primary">
+        <li class="mobile-menu-header" style="display:none">
+          <button class="close-mobile btn btn-outline" aria-label="Close menu" style="display:none">Close ✕</button>
+        </li>
+        <li><a href="/"><i class="fas fa-home"></i> Home</a></li>
+        <% if (user) { %>
+          <% if (user.role === 'worker') { %>
+            <li><a href="/dashboard/worker"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+            <li><a href="/workers/add"><i class="fas fa-plus-circle"></i> Add Profile</a></li>
+            <li><a href="/workers/my"><i class="fas fa-user-tie"></i> My Profiles</a></li>
+          <% } else if (user.role === 'client') { %>
+            <li><a href="/dashboard/client"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+          <% } %>
+        <% } %>
+        <% if (!user) { %>
+          <li><a href="/auth/login" class="btn btn-outline"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+          <li><a href="/auth/signup" class="btn"><i class="fas fa-user-plus"></i> Signup</a></li>
+        <% } else { %>
+          <li class="user-greeting"><i class="fas fa-hand-wave"></i> Welcome, <span><%= user.name %></span> (<%= user.role%>) </li>
+          <li>
+            <div class="notification-container">
+              <button class="notification-btn" id="notificationBtn" aria-label="Notifications">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
+              </button>
+              <div class="notification-dropdown" id="notificationDropdown">
+                <div class="notification-header">
+                  <h3><i class="fas fa-bell"></i> Notifications</h3>
+                  <button class="mark-all-read" id="markAllRead"><i class="fas fa-check-double"></i> Mark all read</button>
+                </div>
+                <div class="notification-list" id="notificationList">
+                  <div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading notifications...</div>
+                </div>
+                <div class="notification-footer">
+                  <a href="/notifications/view" class="view-all"><i class="fas fa-external-link-alt"></i> View all notifications</a>
+                </div>
+              </div>
+            </div>
+          </li>
+          <li><a href="/profile"><i class="fas fa-user"></i> My Profile</a></li>
+          <li><a href="/auth/logout" class="btn btn-outline"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        <% } %>
+      </ul>
+      <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="mobile-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </nav>
+  </header>
+  <div class="nav-backdrop" id="nav-backdrop" aria-hidden="true"></div>
+
+  <main>
+    <%- body %>
+  </main>
+  
+
+
+  <footer>
+    <div class="footer-content">
+      <ul class="footer-links">
+        <li><a href="/about"><i class="fas fa-info-circle"></i> About Us</a></li>
+        <li><a href="/terms"><i class="fas fa-file-contract"></i> Terms of Service</a></li>
+        <li><a href="/privacy"><i class="fas fa-shield-alt"></i> Privacy Policy</a></li>
+        <li><a href="/contact"><i class="fas fa-envelope"></i> Contact</a></li>
+      </ul>
+      <div class="copyright">
+        <p>&copy; 2025 T2YD. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/socket.io/socket.io.js"></script>
+  
+  <!-- Chat Bot Button Script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const chatBotButton = document.getElementById('chatBotButton');
+      
+      if (chatBotButton) {
+        chatBotButton.addEventListener('click', function() {
+          window.location.href = '/chatbot';
+        });
+      }
+    });
+  </script>
+  
+  <!-- Language Files -->
+  <script src="/languages/en.js"></script>
+  <script src="/languages/hi.js"></script>
+  <script src="/languages/mr.js"></script>
+  
+  <!-- Language Switching Script -->
+  <script>
+    // Language switching functionality
+    (function() {
+      const languageBtn = document.getElementById('languageBtn');
+      const languageDropdown = document.getElementById('languageDropdown');
+      const currentLanguageSpan = document.getElementById('currentLanguage');
+      
+      // Get saved language from localStorage or default to English
+      let currentLanguage = localStorage.getItem('selectedLanguage') || 'en';
+      
+      // Initialize language
+      function initLanguage() {
+        setLanguage(currentLanguage);
+        updateLanguageButton();
+      }
+      
+      // Set language and update all text
+      function setLanguage(lang) {
+        currentLanguage = lang;
+        localStorage.setItem('selectedLanguage', lang);
+        
+        const translations = window.translations[lang];
+        if (!translations) return;
+        
+        // Update navigation
+        updateNavigationText(translations);
+        
+        // Update footer
+        updateFooterText(translations);
+        
+        // Update home page content if on home page
+        if (window.location.pathname === '/') {
+          updateHomePageText(translations);
+        }
+        
+        // Update language button
+        updateLanguageButton();
+      }
+      
+      // Update navigation text
+      function updateNavigationText(translations) {
+        const navLinks = document.querySelectorAll('.nav-links a');
+        navLinks.forEach(link => {
+          const href = link.getAttribute('href');
+          if (href === '/') {
+            link.textContent = translations.home;
+          } else if (href.includes('/dashboard/transporter')) {
+            link.textContent = translations.dashboard;
+          } else if (href.includes('/dashboard/shipper')) {
+            link.textContent = translations.dashboard;
+          } else if (href.includes('/lorries/add')) {
+            link.textContent = translations.addLorry;
+          } else if (href.includes('/lorries/my')) {
+            link.textContent = translations.myLorries;
+          } else if (href.includes('/deliveries/add')) {
+            link.textContent = translations.addDelivery;
+          } else if (href.includes('/deliveries/my')) {
+            link.textContent = translations.myDeliveries;
+          } else if (href.includes('/auth/login')) {
+            link.textContent = translations.login;
+          } else if (href.includes('/auth/signup')) {
+            link.textContent = translations.signup;
+          } else if (href.includes('/auth/logout')) {
+            link.textContent = translations.logout;
+          }
+        });
+        
+        // Update user greeting
+        const userGreeting = document.querySelector('.user-greeting');
+        if (userGreeting) {
+          const userName = userGreeting.querySelector('span').textContent;
+          const userRole = userGreeting.textContent.match(/\(([^)]+)\)/)[1];
+          userGreeting.innerHTML = `${translations.welcome}, <span>${userName}</span> (${userRole})`;
+        }
+      }
+      
+      // Update footer text
+      function updateFooterText(translations) {
+        const footerLinks = document.querySelectorAll('.footer-links a');
+        footerLinks.forEach(link => {
+          const href = link.getAttribute('href');
+          if (href === '/about') {
+            link.textContent = translations.aboutUs;
+          } else if (href === '/terms') {
+            link.textContent = translations.termsOfService;
+          } else if (href === '/privacy') {
+            link.textContent = translations.privacyPolicy;
+          } else if (href === '/contact') {
+            link.textContent = translations.contact;
+          }
+        });
+        
+        const copyright = document.querySelector('.copyright p');
+        if (copyright) {
+          copyright.textContent = translations.copyright;
+        }
+      }
+      
+      // Update home page text
+      function updateHomePageText(translations) {
+        // Update all elements with data-translate attribute
+        const translateElements = document.querySelectorAll('[data-translate]');
+        translateElements.forEach(element => {
+          const key = element.getAttribute('data-translate');
+          if (translations[key]) {
+            element.textContent = translations[key];
+          }
+        });
+        
+        // Update placeholders
+        const translatePlaceholders = document.querySelectorAll('[data-translate-placeholder]');
+        translatePlaceholders.forEach(element => {
+          const key = element.getAttribute('data-translate-placeholder');
+          if (translations[key]) {
+            element.placeholder = translations[key];
+          }
+        });
+        
+        // Update specific text patterns
+        updateTextPatterns(translations);
+      }
+      
+      // Update text patterns like "per km", "Negotiable", "Flexible"
+      function updateTextPatterns(translations) {
+        // Update per km text
+        const perKmElements = document.querySelectorAll('[data-translate="perKm"]');
+        perKmElements.forEach(element => {
+          element.textContent = translations.perKm;
+        });
+        
+        // Update other text patterns
+        const negotiableElements = document.querySelectorAll('.card-item span');
+        negotiableElements.forEach(span => {
+          if (span.textContent.includes('Negotiable')) {
+            span.innerHTML = span.innerHTML.replace('Negotiable', translations.negotiable);
+          }
+          if (span.textContent.includes('Flexible')) {
+            span.innerHTML = span.innerHTML.replace('Flexible', translations.flexible);
+          }
+        });
+      }
+      
+      // Update language button text
+      function updateLanguageButton() {
+        const translations = window.translations[currentLanguage];
+        if (translations) {
+          const currentLanguageName = translations[currentLanguage] || 'English';
+          currentLanguageSpan.textContent = currentLanguageName;
+          
+          // Add a small animation to indicate language change
+          currentLanguageSpan.style.transform = 'scale(1.1)';
+          setTimeout(() => {
+            currentLanguageSpan.style.transform = 'scale(1)';
+          }, 200);
+        }
+        
+        // Reorder language options to show selected language first
+        reorderLanguageOptions();
+      }
+      
+      // Reorder language options to show selected language first
+      function reorderLanguageOptions() {
+        const languageDropdown = document.getElementById('languageDropdown');
+        const languageOptions = languageDropdown.querySelectorAll('.language-option');
+        
+        // Create array of language data
+        const languages = [
+          { code: 'en', name: 'English', flag: '🇺🇸' },
+          { code: 'hi', name: 'हिंदी', flag: '🇮🇳' },
+          { code: 'mr', name: 'मराठी', flag: '🇮🇳' }
+        ];
+        
+        // Reorder languages to show selected language first
+        const reorderedLanguages = languages.sort((a, b) => {
+          if (a.code === currentLanguage) return -1;
+          if (b.code === currentLanguage) return 1;
+          return 0;
+        });
+        
+        // Clear and rebuild language options
+        languageDropdown.innerHTML = '';
+        
+        reorderedLanguages.forEach(lang => {
+          const option = document.createElement('div');
+          option.className = 'language-option';
+          option.setAttribute('data-lang', lang.code);
+          
+          // Add selected indicator
+          const isSelected = lang.code === currentLanguage;
+          if (isSelected) {
+            option.classList.add('selected');
+          }
+          
+          option.innerHTML = `
+            <span class="flag">${lang.flag}</span>
+            <span>${lang.name}</span>
+            ${isSelected ? '<span class="selected-indicator">✓</span>' : ''}
+          `;
+          
+          // Add click event listener
+          option.addEventListener('click', function() {
+            const langCode = this.getAttribute('data-lang');
+            setLanguage(langCode);
+            languageDropdown.classList.remove('show');
+          });
+          
+          languageDropdown.appendChild(option);
+        });
+      }
+      
+      // Toggle language dropdown
+      languageBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        languageDropdown.classList.toggle('show');
+      });
+      
+      // Close dropdown when clicking outside
+      document.addEventListener('click', function(e) {
+        if (!languageBtn.contains(e.target) && !languageDropdown.contains(e.target)) {
+          languageDropdown.classList.remove('show');
+        }
+      });
+      
+      // Handle language selection
+      // Language options are now handled dynamically in reorderLanguageOptions()
+      
+      // Initialize language on page load
+      initLanguage();
+    })();
+  </script>
+  
+  <script>
+    // Minimal mobile toggle: simple inline menu for small screens
+    (function(){
+      const toggle = document.getElementById('mobile-menu-toggle');
+      const nav = document.getElementById('mobile-nav');
+      const backdrop = document.getElementById('nav-backdrop');
+      if (!toggle || !nav) return;
+
+      toggle.addEventListener('click', function(){
+        const open = document.body.classList.toggle('simple-inline-open');
+        toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+
+      // Close when clicking backdrop or close button or a nav link
+      if (backdrop) backdrop.addEventListener('click', function(){ document.body.classList.remove('simple-inline-open'); toggle.setAttribute('aria-expanded','false'); });
+      const closeMobileBtn = nav.querySelector('.close-mobile');
+      if (closeMobileBtn) { closeMobileBtn.style.display = 'inline-block'; closeMobileBtn.addEventListener('click', function(e){ e.preventDefault(); document.body.classList.remove('simple-inline-open'); toggle.setAttribute('aria-expanded','false'); }); }
+      nav.addEventListener('click', function(e){ if (e.target && e.target.tagName === 'A') { document.body.classList.remove('simple-inline-open'); toggle.setAttribute('aria-expanded','false'); } });
+    })();
+  </script>
+  <% if (user) { %>
+  <script>
+    (function() {
+      const currentUserId = '<%= user._id %>';
+      const socket = io();
+      const notificationBtn = document.getElementById('notificationBtn');
+      const notificationDropdown = document.getElementById('notificationDropdown');
+      const notificationBadge = document.getElementById('notificationBadge');
+      const notificationList = document.getElementById('notificationList');
+      const markAllReadBtn = document.getElementById('markAllRead');
+      
+      let notifications = [];
+      let unreadCount = 0;
+
+      // Join user's notification room
+      socket.emit('joinUser', currentUserId);
+
+      // Load notifications on page load
+      loadNotifications();
+
+      // Toggle notification dropdown
+      notificationBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        notificationDropdown.classList.toggle('show');
+        if (notificationDropdown.classList.contains('show')) {
+          loadNotifications();
+        }
+      });
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', function(e) {
+        if (!notificationBtn.contains(e.target) && !notificationDropdown.contains(e.target)) {
+          notificationDropdown.classList.remove('show');
+        }
+      });
+
+      // Mark all notifications as read
+      markAllReadBtn.addEventListener('click', function() {
+        markAllAsRead();
+      });
+
+      // Listen for new notifications
+      socket.on('newNotification', function(notification) {
+        console.log('Received new notification:', notification);
+        addNotificationToList(notification);
+        updateBadge();
+        showToast(notification.title, notification.message);
+      });
+
+      // Load notifications from server
+      async function loadNotifications() {
+        try {
+          const response = await fetch('/notifications?limit=10');
+          const data = await response.json();
+          
+          notifications = data.notifications;
+          unreadCount = data.unreadCount;
+          
+          renderNotifications();
+          updateBadge();
+        } catch (error) {
+          console.error('Error loading notifications:', error);
+          notificationList.innerHTML = '<div class="loading">Error loading notifications</div>';
+        }
+      }
+
+      // Render notifications in the list
+      function renderNotifications() {
+        if (notifications.length === 0) {
+          notificationList.innerHTML = `
+            <div class="empty-notifications">
+              <i class="fas fa-bell-slash"></i>
+              <p>No notifications yet</p>
+            </div>
+          `;
+          return;
+        }
+
+        notificationList.innerHTML = notifications.map(notification => `
+          <div class="notification-item ${notification.isRead ? '' : 'unread'}" 
+               data-id="${notification._id}" onclick="markAsRead('${notification._id}')">
+            <div class="notification-title">
+              ${notification.title}
+              <span class="notification-priority ${notification.priority}">${notification.priority}</span>
+            </div>
+            <div class="notification-message">${notification.message}</div>
+            <div class="notification-time">${formatTime(notification.createdAt)}</div>
+                         ${notification.type === 'delivery_request' && notification.relatedRequest ? 
+               `<button class="accept-btn-small" onclick="event.stopPropagation(); acceptRequestFromDropdown('${typeof notification.relatedRequest === 'object' ? notification.relatedRequest._id : notification.relatedRequest}')">Accept</button>` : 
+               ''
+             }
+             ${notification.type === 'bid_sent' && notification.relatedRequest ? 
+               `<button class="accept-btn-small" onclick="event.stopPropagation(); acceptBidFromDropdown('${typeof notification.relatedRequest === 'object' ? notification.relatedRequest._id : notification.relatedRequest}')">Accept Bid</button>
+                <button class="reject-btn-small" onclick="event.stopPropagation(); rejectBidFromDropdown('${typeof notification.relatedRequest === 'object' ? notification.relatedRequest._id : notification.relatedRequest}')">Reject Bid</button>` : 
+               ''
+             }
+          </div>
+        `).join('');
+      }
+
+      // Add new notification to list
+      function addNotificationToList(notification) {
+        const notificationItem = document.createElement('div');
+        notificationItem.className = 'notification-item unread';
+        notificationItem.setAttribute('data-id', notification.id);
+        notificationItem.onclick = () => markAsRead(notification.id);
+        
+        notificationItem.innerHTML = `
+          <div class="notification-title">
+            ${notification.title}
+            <span class="notification-priority ${notification.priority}">${notification.priority}</span>
+          </div>
+          <div class="notification-message">${notification.message}</div>
+          <div class="notification-time">Just now</div>
+        `;
+
+        notificationList.insertBefore(notificationItem, notificationList.firstChild);
+        
+        // Remove empty state if it exists
+        const emptyState = notificationList.querySelector('.empty-notifications');
+        if (emptyState) {
+          emptyState.remove();
+        }
+      }
+
+      // Mark notification as read
+      async function markAsRead(notificationId) {
+        try {
+          await fetch(`/notifications/${notificationId}/read`, {
+            method: 'PUT'
+          });
+          
+          const notificationItem = document.querySelector(`[data-id="${notificationId}"]`);
+          if (notificationItem) {
+            notificationItem.classList.remove('unread');
+          }
+          
+          unreadCount = Math.max(0, unreadCount - 1);
+          updateBadge();
+        } catch (error) {
+          console.error('Error marking notification as read:', error);
+        }
+      }
+
+      // Mark all notifications as read
+      async function markAllAsRead() {
+        try {
+          await fetch('/notifications/mark-all-read', {
+            method: 'PUT'
+          });
+          
+          const unreadItems = notificationList.querySelectorAll('.notification-item.unread');
+          unreadItems.forEach(item => item.classList.remove('unread'));
+          
+          unreadCount = 0;
+          updateBadge();
+        } catch (error) {
+          console.error('Error marking all notifications as read:', error);
+        }
+      }
+
+      // Update notification badge
+      function updateBadge() {
+        if (unreadCount > 0) {
+          notificationBadge.style.display = 'flex';
+          notificationBadge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+        } else {
+          notificationBadge.style.display = 'none';
+        }
+      }
+
+      // Format time
+      function formatTime(dateString) {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diff = now - date;
+        
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(diff / 3600000);
+        const days = Math.floor(diff / 86400000);
+        
+        if (minutes < 1) return 'Just now';
+        if (minutes < 60) return `${minutes}m ago`;
+        if (hours < 24) return `${hours}h ago`;
+        if (days < 7) return `${days}d ago`;
+        
+        return date.toLocaleDateString();
+      }
+
+      // Show toast notification
+      function showToast(title, message) {
+        // Create toast element
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          background: white;
+          border-left: 4px solid var(--secondary-color);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+          padding: 1rem;
+          border-radius: 4px;
+          z-index: 10000;
+          max-width: 300px;
+          animation: slideIn 0.3s ease;
+        `;
+        
+        toast.innerHTML = `
+          <div style="font-weight: 600; margin-bottom: 0.5rem;">${title}</div>
+          <div style="font-size: 0.9rem; color: var(--neutral-500);">${message}</div>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        // Remove toast after 5 seconds
+        setTimeout(() => {
+          toast.style.animation = 'slideOut 0.3s ease';
+          setTimeout(() => {
+            if (toast.parentNode) {
+              toast.parentNode.removeChild(toast);
+            }
+          }, 300);
+        }, 5000);
+      }
+
+      // Add CSS animations and accept button styles
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes slideIn {
+          from { transform: translateX(100%); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOut {
+          from { transform: translateX(0); opacity: 1; }
+          to { transform: translateX(100%); opacity: 0; }
+        }
+        .accept-btn-small {
+          background: var(--success-500);
+          color: white;
+          border: none;
+          padding: 0.3rem 0.6rem;
+          border-radius: 4px;
+          font-size: 0.8rem;
+          cursor: pointer;
+          margin-top: 0.5rem;
+          transition: background 0.3s ease;
+        }
+                 .accept-btn-small:hover {
+           background: var(--success-600);
+         }
+         .reject-btn-small {
+           background: var(--error-500);
+           color: white;
+           border: none;
+           padding: 0.3rem 0.6rem;
+           border-radius: 4px;
+           font-size: 0.8rem;
+           cursor: pointer;
+           margin-top: 0.5rem;
+           margin-left: 0.5rem;
+           transition: background 0.3s ease;
+         }
+         .reject-btn-small:hover {
+           background: var(--error-600);
+         }
+      `;
+      document.head.appendChild(style);
+
+      // Function to accept request from dropdown
+      window.acceptRequestFromDropdown = async function(requestId) {
+        if (!confirm('Are you sure you want to accept this delivery request?')) {
+          return;
+        }
+        
+        try {
+          const response = await fetch(`/notifications/accept-request/${requestId}`, {
+            method: 'POST'
+          });
+          
+          const data = await response.json();
+          
+          if (response.ok) {
+            alert('Request accepted successfully!');
+            // Reload notifications to update the UI
+            loadNotifications();
+          } else {
+            alert(data.message || 'Error accepting request');
+          }
+        } catch (error) {
+          console.error('Error accepting request:', error);
+          alert('Error accepting request. Please try again.');
+        }
+      };
+
+             // Function to accept bid from dropdown
+       window.acceptBidFromDropdown = async function(requestId) {
+         if (!confirm('Are you sure you want to accept this bid?')) {
+           return;
+         }
+         
+         try {
+           const response = await fetch(`/notifications/accept-bid/${requestId}`, {
+             method: 'POST'
+           });
+           
+           const data = await response.json();
+           
+           if (response.ok) {
+             alert('Bid accepted successfully!');
+             // Reload notifications to update the UI
+             loadNotifications();
+           } else {
+             alert(data.message || 'Error accepting bid');
+           }
+         } catch (error) {
+           console.error('Error accepting bid:', error);
+           alert('Error accepting bid. Please try again.');
+         }
+       };
+
+       // Function to reject bid from dropdown
+       window.rejectBidFromDropdown = async function(requestId) {
+         if (!confirm('Are you sure you want to reject this bid?')) {
+           return;
+         }
+         
+         try {
+           const response = await fetch(`/notifications/reject-bid/${requestId}`, {
+             method: 'POST'
+           });
+           
+           const data = await response.json();
+           
+           if (response.ok) {
+             alert('Bid rejected successfully!');
+             // Reload notifications to update the UI
+             loadNotifications();
+           } else {
+             alert(data.message || 'Error rejecting bid');
+           }
+         } catch (error) {
+           console.error('Error rejecting bid:', error);
+           alert('Error rejecting bid. Please try again.');
+         }
+       };
+    })();
+  </script>
+  <% } %>
+
+  
+
+</body>
+</html>

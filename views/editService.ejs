@@ -1,0 +1,52 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <h2><i class="fas fa-briefcase"></i> Edit Service Request</h2>
+      <p>Update your service request details.</p>
+    </div>
+    
+    <form method="post" class="form">
+      <input type="hidden" name="_method" value="PUT">
+      
+      <div class="form-group">
+        <label for="serviceType"><i class="fas fa-briefcase"></i> Service Type</label>
+        <input id="serviceType" name="serviceType" placeholder="e.g., Web Development, Marketing Strategy, Financial Planning" value="<%= service.serviceType %>" required />
+      </div>
+      
+      <div class="form-group">
+        <label for="contact"><i class="fas fa-phone"></i> Contact Information</label>
+        <input id="contact" name="contact" placeholder="Phone number or email" value="<%= service.contact %>" required />
+      </div>
+      
+      <div class="form-group">
+        <label for="skillsRequired"><i class="fas fa-tools"></i> Required Skills (comma separated)</label>
+        <input id="skillsRequired" name="skillsRequired" placeholder="e.g., JavaScript, SEO, Accounting" value="<%= service.skillsRequired ? service.skillsRequired.join(', ') : '' %>" />
+      </div>
+      
+      <div class="form-group">
+        <label for="duration"><i class="fas fa-clock"></i> Expected Duration (hours)</label>
+        <input id="duration" type="number" name="duration" placeholder="Expected duration in hours" value="<%= service.duration || '' %>" min="1" />
+      </div>
+      
+      <div class="form-group">
+        <label for="location"><i class="fas fa-map-marker-alt"></i> Location</label>
+        <input id="location" name="location" placeholder="City, State" value="<%= service.location %>" required />
+      </div>
+      
+      <div class="form-group">
+        <label for="dateTime"><i class="fas fa-calendar-alt"></i> Preferred Date & Time</label>
+        <input id="dateTime" type="datetime-local" name="dateTime" value="<%= service.dateTime ? service.dateTime.toISOString().slice(0, 16) : '' %>" />
+      </div>
+      
+      <div class="form-group">
+        <label for="description"><i class="fas fa-align-left"></i> Detailed Description</label>
+        <textarea id="description" name="description" placeholder="Describe your requirements in detail..." rows="4" required><%= service.description || '' %></textarea>
+      </div>
+      
+      <div class="form-actions">
+        <a href="/services/<%= service._id %>" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back to Service</a>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>

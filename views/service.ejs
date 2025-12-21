@@ -1,0 +1,131 @@
+<div class="service-header">
+  <div class="service-info">
+    <h1><%= service.serviceType %></h1>
+    <p class="service-location"><i class="fas fa-map-marker-alt"></i> <%= service.location %></p>
+    <div class="service-status">
+      <span class="status-badge <%= service.status %>"<%= service.status %></span>
+    </div>
+  </div>
+  <div class="service-actions">
+    <% if (user && user.role === 'worker') { %>
+      <a href="/bid/<%= service._id %>" class="btn btn-primary">
+        <i class="fas fa-handshake"></i> Apply for Service
+      </a>
+    <% } else if (user && user._id.toString() === service.client.toString()) { %>
+      <a href="/services/<%= service._id %>/edit" class="btn btn-outline">
+        <i class="fas fa-edit"></i> Edit Service
+      </a>
+      <button class="btn btn-danger" onclick="deleteService('<%= service._id %>')">
+        <i class="fas fa-trash"></i> Delete Service
+      </button>
+    <% } %>
+  </div>
+</div>
+
+<div class="service-content">
+  <div class="service-details">
+    <div class="detail-card">
+      <h3><i class="fas fa-info-circle"></i> Service Information</h3>
+      <div class="detail-grid">
+        <div class="detail-item">
+          <label>Client:</label>
+          <span><%= service.clientName || 'N/A' %></span>
+        </div>
+        <div class="detail-item">
+          <label>Contact:</label>
+          <span><%= service.contact || 'N/A' %></span>
+        </div>
+        <div class="detail-item">
+          <label>Date & Time:</label>
+          <span><%= service.dateTime ? new Date(service.dateTime).toLocaleString() : 'Flexible' %></span>
+        </div>
+        <div class="detail-item">
+          <label>Duration:</label>
+          <span><%= service.duration || 'Flexible' %> hours</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="detail-card">
+      <h3><i class="fas fa-tools"></i> Required Skills</h3>
+      <div class="skills-container">
+        <% if (service.skillsRequired && service.skillsRequired.length > 0) { %>
+          <% service.skillsRequired.forEach(skill => { %>
+            <span class="skill-tag"><%= skill %></span>
+          <% }) %>
+        <% } else { %>
+          <p>No specific skills required</p>
+        <% } %>
+      </div>
+    </div>
+    
+    <div class="detail-card">
+      <h3><i class="fas fa-align-left"></i> Description</h3>
+      <p><%= service.description || 'No description provided' %></p>
+    </div>
+    
+    <% if (service.location) { %>
+      <div class="detail-card">
+        <h3><i class="fas fa-map-marked-alt"></i> Location</h3>
+        <div id="serviceMap" style="height: 300px; border-radius: 8px;"></div>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<script>
+  async function deleteService(serviceId) {
+    if (!confirm('Are you sure you want to delete this service? This action cannot be undone.')) return;
+    
+    try {
+      const response = await fetch(`/services/${serviceId}`, {
+        method: 'DELETE'
+      });
+      
+      if (response.ok) {
+        alert('Service deleted successfully!');
+        window.location.href = '/services/my';
+      } else {
+        const data = await response.json();
+        alert(data.message || 'Error deleting service');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error deleting service. Please try again.');
+    }
+  }
+</script>
+
+<% if (service.location) { %>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Geocode the location to get coordinates
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=<%= encodeURIComponent(service.location) %>`)
+      .then(response => response.json())
+      .then(data => {
+        if (data && data[0]) {
+          const lat = parseFloat(data[0].lat);
+          const lng = parseFloat(data[0].lon);
+          
+          // Initialize map
+          const map = L.map('serviceMap').setView([lat, lng], 13);
+          
+          // Add tile layer
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          }).addTo(map);
+          
+          // Add marker for service location
+          const serviceMarker = L.marker([lat, lng]).addTo(map);
+          serviceMarker.bindPopup('<b><%= service.serviceType %></b><br>Service Location').openPopup();
+        }
+      })
+      .catch(error => {
+        console.error('Error geocoding location:', error);
+        document.getElementById('serviceMap').innerHTML = '<p>Unable to load map for this location.</p>';
+      });
+  });
+</script>
+<% } %>

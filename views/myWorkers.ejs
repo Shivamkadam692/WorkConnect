@@ -1,0 +1,56 @@
+<div class="dashboard-header">
+  <h1>My Professional Profiles</h1>
+  <p>Manage your worker profiles and services.</p>
+</div>
+
+<div class="action-bar">
+  <a href="/workers/add" class="btn btn-primary">
+    <i class="fas fa-plus-circle"></i> Add New Profile
+  </a>
+</div>
+
+<% if (workers && workers.length > 0) { %>
+  <div class="card-container">
+    <% workers.forEach(worker => { %>
+      <div class="card">
+        <div class="card-header">
+          <h3><%= worker.workerName %></h3>
+          <span class="status-badge <%= worker.status %>"><%= worker.status %></span>
+        </div>
+        <div class="card-body">
+          <div class="card-item">
+            <i class="fas fa-map-marker-alt"></i>
+            <span><strong>Location:</strong> <%= worker.location %></span>
+          </div>
+          <div class="card-item">
+            <i class="fas fa-tools"></i>
+            <span><strong>Skills:</strong> <%= worker.skills ? worker.skills.join(', ') : 'N/A' %></span>
+          </div>
+          <div class="card-item">
+            <i class="fas fa-clock"></i>
+            <span><strong>Experience:</strong> <%= worker.experience || 'N/A' %> years</span>
+          </div>
+          <div class="card-item">
+            <i class="fas fa-rupee-sign"></i>
+            <span><strong>Rate:</strong> ₹<%= worker.hourlyRate || 'Negotiable' %>/hour</span>
+          </div>
+        </div>
+        <div class="card-footer">
+          <a href="/workers/<%= worker._id %>" class="btn btn-sm">
+            <i class="fas fa-eye"></i> View
+          </a>
+          <a href="/workers/<%= worker._id %>/edit" class="btn btn-sm btn-outline">
+            <i class="fas fa-edit"></i> Edit
+          </a>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+<% } else { %>
+  <div class="empty-state">
+    <i class="fas fa-user-tie fa-3x"></i>
+    <h3>No profiles yet</h3>
+    <p>Create your first professional profile to start connecting with clients.</p>
+    <a href="/workers/add" class="btn btn-primary">Add Your First Profile</a>
+  </div>
+<% } %>

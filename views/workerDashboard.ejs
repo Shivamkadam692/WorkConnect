@@ -1,0 +1,250 @@
+<div class="dashboard-header">
+  <h1>Worker Dashboard</h1>
+  <p>Welcome, <%= user.name %>! Manage your profiles and connect with clients.</p>
+</div>
+
+<div class="dashboard-grid">
+  <!-- Stats Cards -->
+  <div class="stats-container">
+    <div class="stat-card">
+      <div class="stat-icon bg-blue">
+        <i class="fas fa-user-tie"></i>
+      </div>
+      <div class="stat-content">
+        <h3><%= workers.length %></h3>
+        <p>Your Profiles</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon bg-green">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <div class="stat-content">
+        <h3><%= requests.filter(r => r.status === 'completed').length %></h3>
+        <p>Completed</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon bg-orange">
+        <i class="fas fa-clock"></i>
+      </div>
+      <div class="stat-content">
+        <h3><%= requests.filter(r => r.status === 'accepted' || r.status === 'pending').length %></h3>
+        <p>Active</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon bg-purple">
+        <i class="fas fa-handshake"></i>
+      </div>
+      <div class="stat-content">
+        <h3>₹<%= requests.filter(r => r.status === 'completed').reduce((sum, r) => sum + (r.price || 0), 0) %></h3>
+        <p>Earnings</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Quick Actions -->
+  <section class="quick-actions">
+    <h2><i class="fas fa-bolt"></i> Quick Actions</h2>
+    <div class="action-buttons">
+      <a href="/workers/add" class="btn btn-primary">
+        <i class="fas fa-plus-circle"></i>
+        <span>Add Profile</span>
+      </a>
+      <a href="/search" class="btn btn-outline">
+        <i class="fas fa-search"></i>
+        <span>Find Work</span>
+      </a>
+      <a href="/workers/my" class="btn btn-outline">
+        <i class="fas fa-history"></i>
+        <span>My Profiles</span>
+      </a>
+    </div>
+  </section>
+  
+  <!-- Your Profiles -->
+  <section>
+    <div class="section-header">
+      <h2><i class="fas fa-user-tie"></i> Your Profiles</h2>
+      <a href="/workers/my" class="btn btn-sm btn-outline">View All</a>
+    </div>
+    
+    <% if (workers.length > 0) { %>
+      <div class="card-container">
+        <% workers.slice(0, 3).forEach(worker => { %>
+          <div class="card">
+            <div class="card-header">
+              <h3><%= worker.workerName %></h3>
+              <span class="status-badge <%= worker.status %>"><%= worker.status %></span>
+            </div>
+            <div class="card-body">
+              <div class="card-item">
+                <i class="fas fa-map-marker-alt"></i>
+                <span><strong>Location:</strong> <%= worker.location %></span>
+              </div>
+              <div class="card-item">
+                <i class="fas fa-tools"></i>
+                <span><strong>Skills:</strong> <%= worker.skills ? worker.skills.join(', ') : 'N/A' %></span>
+              </div>
+              <div class="card-item">
+                <i class="fas fa-rupee-sign"></i>
+                <span><strong>Rate:</strong> ₹<%= worker.hourlyRate || 'Negotiable' %>/hour</span>
+              </div>
+              <a href="/workers/<%= worker._id %>" class="btn btn-sm">View Details</a>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="empty-state">
+        <i class="fas fa-user-tie fa-3x"></i>
+        <h3>No profiles yet</h3>
+        <p>Create your first professional profile to get started.</p>
+        <a href="/workers/add" class="btn btn-primary">Add Profile</a>
+      </div>
+    <% } %>
+  </section>
+  
+  <!-- Recent Requests -->
+  <section>
+    <div class="section-header">
+      <h2><i class="fas fa-paper-plane"></i> Recent Requests</h2>
+    </div>
+    
+    <% if (requests.length > 0) { %>
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Client</th>
+              <th>Date & Time</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% requests.slice(0, 5).forEach(request => { %>
+              <tr>
+                <td><%= request.client ? request.client.name : 'N/A' %></td>
+                <td><%= request.preferredDateTime ? new Date(request.preferredDateTime).toLocaleString() : 'N/A' %></td>
+                <td><span class="status-badge <%= request.status %>"><%= request.status %></span></td>
+                <td>
+                  <% if (request.status === 'pending') { %>
+                    <button class="btn btn-sm btn-success" onclick="acceptRequest('<%= request._id %>')">Accept</button>
+                    <button class="btn btn-sm btn-danger" onclick="rejectRequest('<%= request._id %>')">Reject</button>
+                  <% } else if (request.status === 'accepted') { %>
+                    <a href="/dashboard/track/<%= request._id %>" class="btn btn-sm btn-primary">Track</a>
+                    <form action="/dashboard/complete-service/<%= request._id %>" method="POST" style="display: inline;">
+                      <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Mark this work as completed?')">Work Completed</button>
+                    </form>
+                  <% } else if (request.status === 'completed') { %>
+                    <a href="/payments/request/<%= request._id %>" class="btn btn-sm btn-info">View Payments</a>
+                  <% } else { %>
+                    <span>-</span>
+                  <% } %>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } else { %>
+      <div class="empty-state">
+        <i class="fas fa-paper-plane fa-3x"></i>
+        <h3>No requests yet</h3>
+        <p>Clients will send you requests.</p>
+      </div>
+    <% } %>
+  </section>
+  
+
+<style>
+  .bg-blue {
+    background-color: var(--primary-500);
+  }
+  
+  .bg-green {
+    background-color: var(--success-500);
+  }
+  
+  .bg-orange {
+    background-color: var(--accent-500);
+  }
+  
+  .bg-purple {
+    background-color: var(--secondary-500);
+  }
+</style>
+
+<script>
+  // Function to delete a worker profile
+  async function deleteWorker(workerId) {
+    if (!confirm('Are you sure you want to delete this profile? This action cannot be undone.')) return;
+    
+    try {
+      const response = await fetch(`/workers/${workerId}`, {
+        method: 'DELETE'
+      });
+      
+      if (response.ok) {
+        alert('Profile deleted successfully!');
+        // Reload the page to reflect changes
+        location.reload();
+      } else {
+        const data = await response.json();
+        alert(data.message || 'Error deleting profile');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error deleting profile. Please try again.');
+    }
+  }
+  
+  // Function to accept a request
+  async function acceptRequest(requestId) {
+    if (!confirm('Are you sure you want to accept this request?')) return;
+    
+    try {
+      const response = await fetch(`/dashboard/accept-request/${requestId}`, {
+        method: 'POST'
+      });
+      
+      if (response.ok) {
+        alert('Request accepted successfully!');
+        location.reload();
+      } else {
+        const data = await response.json();
+        alert(data.message || 'Error accepting request');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error accepting request. Please try again.');
+    }
+  }
+  
+  // Function to reject a request
+  async function rejectRequest(requestId) {
+    if (!confirm('Are you sure you want to reject this request?')) return;
+    
+    try {
+      const response = await fetch(`/dashboard/reject-request/${requestId}`, {
+        method: 'POST'
+      });
+      
+      if (response.ok) {
+        alert('Request rejected successfully!');
+        location.reload();
+      } else {
+        const data = await response.json();
+        alert(data.message || 'Error rejecting request');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error rejecting request. Please try again.');
+    }
+  }
+</script>

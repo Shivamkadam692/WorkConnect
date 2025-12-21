@@ -1,0 +1,166 @@
+<div class="profile-header">
+  <div class="profile-info">
+    <h1><%= worker.workerName %></h1>
+    <p class="profile-location"><i class="fas fa-map-marker-alt"></i> <%= worker.location %></p>
+    <div class="profile-status">
+      <span class="status-badge <%= worker.status %>"><%= worker.status %></span>
+    </div>
+  </div>
+  <div class="profile-actions">
+    <% if (user && user.role === 'client') { %>
+      <button class="btn btn-primary" onclick="showRequestForm()">
+        <i class="fas fa-paper-plane"></i> Send Request
+      </button>
+    <% } else if (user && user._id.toString() === worker.worker.toString()) { %>
+      <a href="/workers/<%= worker._id %>/edit" class="btn btn-outline">
+        <i class="fas fa-edit"></i> Edit Profile
+      </a>
+      <button class="btn btn-danger" onclick="deleteWorker('<%= worker._id %>')">
+        <i class="fas fa-trash"></i> Delete Profile
+      </button>
+    <% } %>
+  </div>
+</div>
+
+<div class="profile-content">
+  <div class="profile-details">
+    <div class="detail-card">
+      <h3><i class="fas fa-info-circle"></i> Profile Information</h3>
+      <div class="detail-grid">
+        <div class="detail-item">
+          <label>Contact:</label>
+          <span><%= worker.contact || 'N/A' %></span>
+        </div>
+        <div class="detail-item">
+          <label>Experience:</label>
+          <span><%= worker.experience || 'N/A' %> years</span>
+        </div>
+        <div class="detail-item">
+          <label>Hourly Rate:</label>
+          <span>₹<%= worker.hourlyRate || 'Negotiable' %>/hour</span>
+        </div>
+        <div class="detail-item">
+          <label>Description:</label>
+          <span><%= worker.description || 'No description provided' %></span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="detail-card">
+      <h3><i class="fas fa-tools"></i> Skills</h3>
+      <div class="skills-container">
+        <% if (worker.skills && worker.skills.length > 0) { %>
+          <% worker.skills.forEach(skill => { %>
+            <span class="skill-tag"><%= skill %></span>
+          <% }) %>
+        <% } else { %>
+          <p>No skills listed</p>
+        <% } %>
+      </div>
+    </div>
+    
+    <% if (worker.coordinates) { %>
+      <div class="detail-card">
+        <h3><i class="fas fa-map-marked-alt"></i> Location</h3>
+        <div id="workerMap" style="height: 300px; border-radius: 8px;"></div>
+      </div>
+    <% } %>
+  </div>
+  
+  
+</div>
+
+<!-- Request Form Modal -->
+<div id="requestModal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <span class="close" onclick="closeRequestForm()">&times;</span>
+    <h2>Send Request to <%= worker.workerName %></h2>
+    <form id="requestForm" action="/dashboard/send-request" method="POST">
+      <input type="hidden" name="workerId" value="<%= worker._id %>">
+      
+      <div class="form-group">
+        <label for="date"><i class="fas fa-calendar-alt"></i> Preferred Date:</label>
+        <input type="date" id="date" name="date" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="time"><i class="fas fa-clock"></i> Preferred Time:</label>
+        <input type="time" id="time" name="time" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="requirements"><i class="fas fa-align-left"></i> Requirements:</label>
+        <textarea id="requirements" name="requirements" placeholder="Please describe your requirements in detail..." rows="4" required></textarea>
+      </div>
+      
+      <div class="form-actions">
+        <button type="button" class="btn btn-outline" onclick="closeRequestForm()">Cancel</button>
+        <button type="submit" class="btn btn-primary">Send Request</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  async function deleteWorker(workerId) {
+    if (!confirm('Are you sure you want to delete this profile? This action cannot be undone.')) return;
+    
+    try {
+      const response = await fetch(`/workers/${workerId}`, {
+        method: 'DELETE'
+      });
+      
+      if (response.ok) {
+        alert('Profile deleted successfully!');
+        window.location.href = '/workers/my';
+      } else {
+        const data = await response.json();
+        alert(data.message || 'Error deleting profile');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error deleting profile. Please try again.');
+    }
+  }
+  
+  function showRequestForm() {
+    document.getElementById('requestModal').style.display = 'block';
+    
+    // Set minimum date to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('date').min = today;
+  }
+  
+  function closeRequestForm() {
+    document.getElementById('requestModal').style.display = 'none';
+    document.getElementById('requestForm').reset();
+  }
+  
+  // Close modal when clicking outside of it
+  window.onclick = function(event) {
+    const modal = document.getElementById('requestModal');
+    if (event.target == modal) {
+      closeRequestForm();
+    }
+  }
+</script>
+
+<% if (worker.coordinates) { %>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initialize map
+    const map = L.map('workerMap').setView([<%= worker.coordinates.lat %>, <%= worker.coordinates.lng %>], 13);
+    
+    // Add tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+    
+    // Add marker for worker location
+    const workerMarker = L.marker([<%= worker.coordinates.lat %>, <%= worker.coordinates.lng %>]).addTo(map);
+    workerMarker.bindPopup('<b><%= worker.workerName %></b><br>Worker').openPopup();
+  });
+</script>
+<% } %>

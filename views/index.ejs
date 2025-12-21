@@ -1,0 +1,103 @@
+<section class="hero">
+  <h1 data-translate="heroTitle">Find Expert Workers for Your Business Needs</h1>
+  <p data-translate="heroSubtitle">Connect with skilled professionals and clients across the country</p>
+</section>
+
+<section class="search-container">
+  <div class="search-options">
+    <h3>Search Workers By:</h3>
+    <div class="search-tabs">
+      <button class="tab-btn btn btn-primary active" onclick="showSearchForm('general')">General Search</button>
+      <button class="tab-btn btn btn-primary" onclick="showSearchForm('skills')">By Skills</button>
+      <button class="tab-btn btn btn-primary" onclick="showSearchForm('location')">By Location</button>
+    </div>
+    
+    <!-- General Search Form -->
+    <form id="general-search" action="/search" method="get" class="search-form active">
+      <div class="search-input-wrapper">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" name="query" placeholder="Search by name, location, or skills..." required>
+      </div>
+      <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Search</button>
+    </form>
+    
+    <!-- Skills Search Form -->
+    <form id="skills-search" action="/search" method="get" class="search-form" style="display: none;">
+      <div class="search-input-wrapper">
+        <i class="fas fa-tools search-icon"></i>
+        <input type="text" name="skills" placeholder="Enter skills (e.g., Web Development, Marketing)..." required>
+      </div>
+      <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Search by Skills</button>
+    </form>
+    
+    <!-- Location Search Form -->
+    <form id="location-search" action="/search" method="get" class="search-form" style="display: none;">
+      <div class="search-input-wrapper">
+        <i class="fas fa-map-marker-alt search-icon"></i>
+        <input type="text" name="location" placeholder="Enter location (e.g., Mumbai, Delhi)..." required>
+      </div>
+      <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Search by Location</button>
+    </form>
+  </div>
+</section>
+
+<script>
+  function showSearchForm(formType) {
+    // Hide all forms
+    document.getElementById('general-search').style.display = 'none';
+    document.getElementById('skills-search').style.display = 'none';
+    document.getElementById('location-search').style.display = 'none';
+    
+    // Show selected form
+    document.getElementById(formType + '-search').style.display = 'flex';
+    
+    // Update active tab
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+  }
+</script>
+
+<section>
+  <h2 class="section-title" data-translate="availableWorkers"><i class="fas fa-user-tie"></i> Available Workers</h2>
+  <div class="card-container">
+    <% workers.forEach(worker => { %>
+      <div class="card">
+        <div class="card-header">
+          <%= worker.workerName || 'Worker' %>
+        </div>
+        <div class="card-body">
+          <div class="card-item">
+            <i class="fas fa-user"></i>
+            <span><strong data-translate="name">Name:</strong> <%= worker.workerName %></span>
+          </div>
+          <div class="card-item">
+            <i class="fas fa-map-marker-alt"></i>
+            <span><strong data-translate="location">Location:</strong> <%= worker.location %></span>
+          </div>
+          <div class="card-item">
+            <i class="fas fa-tools"></i>
+            <span><strong data-translate="skills">Skills:</strong> <%= worker.skills ? worker.skills.join(', ') : 'N/A' %></span>
+          </div>
+          <div class="card-item">
+            <i class="fas fa-clock"></i>
+            <span><strong data-translate="experience">Experience:</strong> <%= worker.experience || 'N/A' %> years</span>
+          </div>
+          <div class="card-item">
+            <i class="fas fa-rupee-sign"></i>
+            <span><strong data-translate="rate">Rate:</strong> ₹<%= worker.hourlyRate || 'Negotiable' %> <span data-translate="perHour">per hour</span></span>
+          </div>
+          <a href="/workers/<%= worker._id %>" class="btn" style="margin-top: 1rem; display: block; text-align: center;" data-translate="viewDetails">
+            View Details
+          </a>
+          <!-- Hire worker button: only shown to clients -->
+          <% if (locals.user && user.role === 'client') { %>
+            <a href="/workers/<%= worker._id %>" class="btn btn-outline" style="margin-top: .5rem; display:block; text-align:center;" data-translate="hireWorker">Hire Worker</a>
+          <% } else if (!locals.user) { %>
+            <a href="/auth/login" class="btn btn-outline" style="margin-top: .5rem; display:block; text-align:center;" data-translate="hireWorker">Hire Worker</a>
+          <% } %>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+</section>
+

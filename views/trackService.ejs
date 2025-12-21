@@ -1,0 +1,1028 @@
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+<style>
+  #map-container {
+    height: 70vh;
+    transition: transform 0.5s ease, box-shadow 0.5s ease;
+  }
+  
+  #map {
+    height: 100%;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.5s ease, box-shadow 0.5s ease, border-radius 0.5s ease;
+  }
+
+  .track-panel {
+    background: white;
+    padding: 1rem;
+    margin-top: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .distance-box {
+    background: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    font-weight: 600;
+  }
+  
+  /* Map controls styling */
+  .map-controls {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .map-controls .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  .map-controls .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  }
+  
+  .view-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto;
+  }
+  
+  .view-toggle label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--neutral-700);
+  }
+  
+  .toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 20px;
+  }
+  
+  .toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--neutral-300);
+    transition: .4s;
+    border-radius: 20px;
+  }
+  
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+  }
+  
+  input:checked + .slider {
+    background-color: var(--primary-500);
+  }
+  
+  input:checked + .slider:before {
+    transform: translateX(20px);
+  }
+  
+  /* 3D view styles */
+  .map-3d-view {
+    transform: perspective(1200px) rotateX(15deg) translateZ(50px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  }
+  
+  .map-3d-view #map {
+    border-radius: 12px;
+  }
+  
+  /* Directions panel styles */
+  .directions-panel {
+    background: white;
+    padding: 1rem;
+    margin-top: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .directions-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    border-radius: 6px;
+    background: var(--neutral-100);
+    border-left: 4px solid var(--primary-500);
+    transition: background 0.2s ease;
+  }
+  
+  .directions-item:hover {
+    background: var(--neutral-200);
+  }
+  
+  .directions-step {
+    font-weight: bold;
+    margin-right: 0.75rem;
+    color: var(--primary-500);
+    min-width: 24px;
+    text-align: center;
+  }
+  
+  .directions-text {
+    flex: 1;
+  }
+  
+  .directions-distance {
+    font-size: 0.85rem;
+    color: var(--neutral-500);
+    margin-top: 0.25rem;
+  }
+  
+  .directions-icon {
+    margin-right: 0.75rem;
+    font-size: 1.2rem;
+    color: var(--primary-500);
+    min-width: 24px;
+    text-align: center;
+  }
+  
+  .directions-summary {
+    background: var(--primary-100);
+    padding: 0.75rem;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    font-weight: 500;
+  }
+  
+  /* Professional chat styles */
+  .chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--neutral-200);
+    margin-bottom: 1rem;
+  }
+  
+  .chat-header h3 {
+    margin: 0;
+    color: var(--neutral-700);
+    font-size: 1.25rem;
+  }
+  
+  .chat-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .status-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  
+  .status-indicator.online {
+    background-color: var(--success-500);
+  }
+  
+  .status-text {
+    font-size: 0.85rem;
+    color: var(--neutral-500);
+    font-weight: 500;
+  }
+  
+  .chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 400px;
+  }
+  
+  .messages-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    background: var(--neutral-100);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    border: 1px solid var(--neutral-200);
+  }
+  
+  .message {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+    animation: fadeIn 0.3s ease;
+  }
+  
+  .message.own {
+    align-items: flex-end;
+  }
+  
+  .message.other {
+    align-items: flex-start;
+  }
+  
+  .message-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.25rem;
+  }
+  
+  .message.own .message-header {
+    flex-direction: row-reverse;
+  }
+  
+  .sender-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--neutral-700);
+  }
+  
+  .message.own .sender-name {
+    color: var(--primary-600);
+  }
+  
+  .message-time {
+    font-size: 0.75rem;
+    color: var(--neutral-400);
+    margin: 0 0.5rem;
+  }
+  
+  .message-content {
+    max-width: 80%;
+    padding: 0.75rem 1rem;
+    border-radius: 18px;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    position: relative;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+  
+  .message.own .message-content {
+    background: var(--primary-600);
+    color: white;
+    border-bottom-right-radius: 4px;
+  }
+  
+  .message.other .message-content {
+    background: white;
+    color: var(--neutral-700);
+    border: 1px solid var(--neutral-200);
+    border-bottom-left-radius: 4px;
+  }
+  
+  .message-form {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .input-group {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  .message-input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--neutral-300);
+    border-radius: 24px;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+  
+  .message-input:focus {
+    border-color: var(--primary-600);
+    box-shadow: 0 0 0 2px rgba(234, 88, 12, 0.2);
+  }
+  
+  .send-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    border-radius: 24px;
+  }
+  
+  .chat-note {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--neutral-500);
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: var(--primary-50);
+    border-radius: 6px;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  /* Scrollbar styling */
+  .messages-container::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .messages-container::-webkit-scrollbar-track {
+    background: var(--neutral-200);
+    border-radius: 10px;
+  }
+  
+  .messages-container::-webkit-scrollbar-thumb {
+    background: var(--neutral-400);
+    border-radius: 10px;
+  }
+  
+  .messages-container::-webkit-scrollbar-thumb:hover {
+    background: var(--neutral-500);
+  }
+</style>
+
+<% // Ensure safe local bindings to avoid template errors %>
+<% const _request = typeof request !== 'undefined' && request ? request : {}; %>
+<% const _user = typeof user !== 'undefined' && user ? user : {}; %>
+<% const roleComputed = (_request && _request.client && _user && _request.client._id && _user._id && String(_request.client._id) === String(_user._id)) ? 'client' : 'worker'; %>
+<% const accepted = !!(_request.acceptedAt); %>
+<% const loaded = !!(_request.loadedAt); %>
+<% const completed = (_request.status === 'completed') || !!(_request.completedAt); %>
+
+<div class="dashboard-header">
+  <h1>Live Tracking</h1>
+  <p>Service: <strong><%= _request.service ? _request.service.serviceType : 'Unknown Service' %></strong>
+    | Client: <%= _request.client ? _request.client.name : 'Unknown' %>
+    | Worker: <%= _request.worker ? _request.worker.name : 'Unknown' %>
+  </p>
+  <div class="phase-badges">
+    <span class="badge <%= accepted && !loaded ? 'active' : (accepted ? 'done' : 'pending') %>">Accepted</span>
+    <span class="badge <%= loaded && !completed ? 'active' : (loaded ? 'done' : 'pending') %>">Started</span>
+    <span class="badge <%= (accepted && loaded && !completed) ? 'active' : ((accepted && !completed) ? 'done' : 'pending') %>">In Progress</span>
+    <span class="badge <%= completed ? 'done' : 'pending' %>">Completed</span>
+  </div>
+</div>
+
+<!-- Map Controls -->
+<div class="map-controls">
+  <button id="centerMeBtn" class="btn btn-outline">
+    <i class="fas fa-location-arrow"></i> Center on Me
+  </button>
+  <button id="centerWorkerBtn" class="btn btn-outline">
+    <i class="fas fa-user-tie"></i> Center on Worker
+  </button>
+  <button id="centerClientBtn" class="btn btn-outline">
+    <i class="fas fa-user"></i> Center on Client
+  </button>
+  <button id="showDirectionsBtn" class="btn btn-outline">
+    <i class="fas fa-directions"></i> Show Directions
+  </button>
+  <div class="view-toggle">
+    <label for="viewToggle">3D View:</label>
+    <label class="toggle-switch">
+      <input type="checkbox" id="viewToggle">
+      <span class="slider"></span>
+    </label>
+  </div>
+</div>
+
+<!-- Directions Panel -->
+<div id="directionsPanel" class="directions-panel" style="display: none; background: white; padding: 1rem; margin-top: 1rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+    <h3 style="margin: 0;"><i class="fas fa-route"></i> Directions</h3>
+    <button id="hideDirectionsBtn" class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">
+      <i class="fas fa-times"></i> Close
+    </button>
+  </div>
+  
+  <div id="directionsContent" style="max-height: 300px; overflow-y: auto;">
+    <div id="directionsList" style="margin-top: 1rem;">
+      <!-- Directions will be populated here -->
+    </div>
+  </div>
+</div>
+
+<!-- Map container with 3D transformation capabilities -->
+<div id="map-container" style="perspective: 1200px; margin-bottom: 1rem;">
+  <div id="map"></div>
+</div>
+
+<div class="track-panel">
+  <div class="form-actions">
+    <button id="startBtn" class="btn btn-primary">Start Sharing My Location</button>
+    <button id="stopBtn" class="btn btn-secondary">Stop Sharing</button>
+    
+    <% if (roleComputed === 'worker' && !_request.loadedAt) { %>
+      <form action="/dashboard/mark-started/<%= _request._id %>" method="POST" style="display: inline;">
+        <button type="submit" class="btn btn-success" onclick="return confirm('Mark this meeting as started?')">Mark Meeting Started</button>
+      </form>
+    <% } %>
+    
+    <% if (roleComputed === 'worker' && _request.loadedAt && !_request.completedAt) { %>
+      <form action="/dashboard/complete-service/<%= _request._id %>" method="POST" style="display: inline;">
+        <button type="submit" class="btn btn-success" onclick="return confirm('Mark this work as completed?')">Work Completed</button>
+      </form>
+    <% } %>
+    
+    <% // Safe back-to-dashboard link decision %>
+    <% const backTo = (_request && _request.client && _user && _request.client._id && _user._id && String(_request.client._id) === String(_user._id)) ? '/dashboard/client' : '/dashboard/worker'; %>
+    <a href="<%= backTo %>" class="btn btn-outline">Back to Dashboard</a>
+  </div>
+  <p style="margin-top: .5rem; color: var(--neutral-500);">Both sides will see each other's live movement on the map while the request is active.</p>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+
+<!-- Server-provided data as raw JSON to avoid EJS tags inside JS source -->
+<script id="track-data" type="application/json"><%- JSON.stringify({
+  requestId: _request._id ? String(_request._id) : '',
+  role: roleComputed,
+  userId: _user && _user._id ? String(_user._id) : null,
+  requestStatus: _request && _request.status ? _request.status : null,
+  locationText: _request.service && _request.service.location ? _request.service.location : ''
+  clientLocation: (_request && _request.clientLocation && _request.clientLocation.lat != null) ? { lat: _request.clientLocation.lat, lng: _request.clientLocation.lng } : null,
+  workerLocation: (_request && _request.workerLocation && _request.workerLocation.lat != null) ? { lat: _request.workerLocation.lat, lng: _request.workerLocation.lng } : null
+}) %></script>
+
+<script>
+  // Parse server-provided JSON data
+  let serverData = {};
+  try {
+    serverData = JSON.parse(document.getElementById('track-data').textContent || '{}');
+  } catch (e) {
+    console.error('Failed to parse server track data', e);
+  }
+
+  const requestId = serverData.requestId || '';
+  const role = serverData.role || 'worker';
+  const locationText = serverData.locationText || '';
+
+  // Initialize map with reasonable zoom
+  const map = L.map('map').setView([20.5937, 78.9629], 6);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+
+  // Explicit icons so markers are always visible
+  const defaultIconUrl = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png';
+  const defaultIcon2xUrl = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png';
+  const defaultShadowUrl = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png';
+  const clientIcon = L.icon({ iconUrl: defaultIconUrl, iconRetinaUrl: defaultIcon2xUrl, shadowUrl: defaultShadowUrl, iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] });
+  const workerIcon = L.icon({ iconUrl: defaultIconUrl, iconRetinaUrl: defaultIcon2xUrl, shadowUrl: defaultShadowUrl, iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] });
+
+  let clientMarker = null, workerMarker = null;
+  let locationMarker = null, distanceControl = null;
+  let routeToLocationMain = null, routeToLocationAlts = [];
+  let routeLocationMain = null, routeLocationAlts = [];
+
+  function geocode(query) {
+    if (!query) return Promise.resolve(null);
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`;
+    return fetch(url, { headers: { 'Accept': 'application/json' } })
+      .then(r => r.json())
+      .then(arr => (arr && arr[0]) ? { lat: parseFloat(arr[0].lat), lng: parseFloat(arr[0].lon) } : null)
+      .catch(() => null);
+  }
+
+  function haversineKm(a, b) {
+    const R = 6371;
+    const toRad = d => d * Math.PI / 180;
+    const dLat = toRad(b.lat - a.lat);
+    const dLng = toRad(b.lng - a.lng);
+    const lat1 = toRad(a.lat);
+    const lat2 = toRad(b.lat);
+    const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+  }
+
+  function updateDistanceControl(km) {
+    if (role !== 'worker') return;
+    const text = `Distance to Client: ${km.toFixed(1)} km`;
+    if (!distanceControl) {
+      distanceControl = L.control({ position: 'topright' });
+      distanceControl.onAdd = function () {
+        const div = L.DomUtil.create('div', 'distance-box');
+        div.innerHTML = text;
+        return div;
+      };
+      distanceControl.addTo(map);
+    } else {
+      const div = distanceControl.getContainer();
+      if (div) div.innerHTML = text;
+    }
+  }
+
+  function fitAllBounds() {
+    let bounds = null;
+    const add = (ll) => {
+      if (!ll) return;
+      if (!bounds) bounds = L.latLngBounds([ll]); else bounds.extend(ll);
+    };
+    if (clientMarker) add(clientMarker.getLatLng());
+    if (workerMarker) add(workerMarker.getLatLng());
+    if (locationMarker) add(locationMarker.getLatLng());
+    if (routeToLocationMain) bounds = bounds ? bounds.extend(routeToLocationMain.getBounds()) : routeToLocationMain.getBounds();
+    if (routeLocationMain) bounds = bounds ? bounds.extend(routeLocationMain.getBounds()) : routeLocationMain.getBounds();
+    if (bounds) map.fitBounds(bounds, { padding: [50, 50] });
+  }
+
+  // New functions for map controls
+  function centerOnMe() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          map.setView([lat, lng], 15);
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+          alert('Unable to get your location');
+        }
+      );
+    } else {
+      alert('Geolocation is not supported by your browser');
+    }
+  }
+
+  function centerOnWorker() {
+    if (workerMarker) {
+      map.setView(workerMarker.getLatLng(), 15);
+    } else {
+      alert('Worker location not available');
+    }
+  }
+
+  function centerOnClient() {
+    if (clientMarker) {
+      map.setView(clientMarker.getLatLng(), 15);
+    } else {
+      alert('Client location not available');
+    }
+  }
+
+  function toggle3DView() {
+    const isChecked = document.getElementById('viewToggle').checked;
+    const mapContainer = document.getElementById('map-container');
+    
+    if (isChecked) {
+      // Add 3D effect class
+      mapContainer.classList.add('map-3d-view');
+    } else {
+      // Remove 3D effect class
+      mapContainer.classList.remove('map-3d-view');
+    }
+  }
+
+  // Directions functionality
+  let directionsControl = null;
+  let directionsPolyline = null;
+  
+  // Show directions panel
+  function showDirections() {
+    document.getElementById('directionsPanel').style.display = 'block';
+    
+    // Determine start and end points based on user role
+    let startLatLng, endLatLng, startName, endName;
+    
+    if (role === 'worker') {
+      // Worker: from current location to client
+      if (workerMarker) {
+        startLatLng = workerMarker.getLatLng();
+        startName = "Your Location";
+      }
+      if (clientMarker) {
+        endLatLng = clientMarker.getLatLng();
+        endName = "Client Location";
+      }
+    } else {
+      // Client: from location to client location (could be same)
+      if (locationMarker) {
+        startLatLng = locationMarker.getLatLng();
+        startName = "Service Location";
+      }
+      if (clientMarker) {
+        endLatLng = clientMarker.getLatLng();
+        endName = "Client Location";
+      }
+    }
+    
+    // If we have both start and end points, calculate directions
+    if (startLatLng && endLatLng) {
+      calculateDirections(startLatLng, endLatLng, startName, endName);
+    } else {
+      document.getElementById('directionsList').innerHTML = '<p>Unable to determine start and end points for directions.</p>';
+    }
+  }
+  
+  // Hide directions panel
+  function hideDirections() {
+    document.getElementById('directionsPanel').style.display = 'none';
+    
+    // Remove directions polyline if it exists
+    if (directionsPolyline) {
+      map.removeLayer(directionsPolyline);
+      directionsPolyline = null;
+    }
+  }
+  
+  // Calculate and display directions
+  async function calculateDirections(startLatLng, endLatLng, startName, endName) {
+    try {
+      const url = `https://router.project-osrm.org/route/v1/driving/${startLatLng.lng},${startLatLng.lat};${endLatLng.lng},${endLatLng.lat}?overview=full&geometries=geojson&steps=true`;
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error('Routing failed');
+      }
+      
+      const data = await response.json();
+      
+      if (!data.routes || !data.routes.length) {
+        throw new Error('No routes found');
+      }
+      
+      const route = data.routes[0];
+      const steps = route.legs[0].steps;
+      
+      // Display route summary
+      const summary = `
+        <div class="directions-summary">
+          <i class="fas fa-info-circle"></i> 
+          Distance: ${(route.distance / 1000).toFixed(1)} km | 
+          Estimated Time: ${Math.round(route.duration / 60)} min
+        </div>
+      `;
+      
+      // Display turn-by-turn directions
+      let directionsHTML = summary;
+      
+      steps.forEach((step, index) => {
+        // Get appropriate icon based on maneuver
+        let iconClass = 'fas fa-arrow-right';
+        if (step.maneuver.type === 'turn') {
+          if (step.maneuver.modifier.includes('left')) {
+            iconClass = 'fas fa-arrow-left';
+          } else if (step.maneuver.modifier.includes('right')) {
+            iconClass = 'fas fa-arrow-right';
+          }
+        } else if (step.maneuver.type === 'new name') {
+          iconClass = 'fas fa-road';
+        } else if (step.maneuver.type === 'arrive') {
+          iconClass = 'fas fa-flag-checkered';
+        }
+        
+        directionsHTML += `
+          <div class="directions-item">
+            <div class="directions-step">${index + 1}.</div>
+            <div class="directions-icon">
+              <i class="${iconClass}"></i>
+            </div>
+            <div class="directions-text">
+              ${step.instruction}
+              <div class="directions-distance">${(step.distance / 1000).toFixed(1)} km</div>
+            </div>
+          </div>
+        `;
+      });
+      
+      document.getElementById('directionsList').innerHTML = directionsHTML;
+      
+      // Draw the route on the map
+      if (directionsPolyline) {
+        map.removeLayer(directionsPolyline);
+      }
+      
+      const coords = route.geometry.coordinates.map(([lng, lat]) => [lat, lng]);
+      directionsPolyline = L.polyline(coords, {
+        color: 'var(--primary-500)'
+        weight: 6,
+        opacity: 0.8
+      }).addTo(map);
+      
+      // Fit map to show the route
+      map.fitBounds(directionsPolyline.getBounds(), { padding: [50, 50] });
+      
+    } catch (error) {
+      console.error('Error calculating directions:', error);
+      document.getElementById('directionsList').innerHTML = '<p>Failed to calculate directions. Please try again.</p>';
+    }
+  }
+
+  // Event listeners for map controls (moved to the end to ensure all functions are defined)
+  document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('centerMeBtn')?.addEventListener('click', centerOnMe);
+    document.getElementById('centerWorkerBtn')?.addEventListener('click', centerOnWorker);
+    document.getElementById('centerClientBtn')?.addEventListener('click', centerOnClient);
+    document.getElementById('viewToggle')?.addEventListener('change', toggle3DView);
+    
+    // Event listeners for directions
+    document.getElementById('showDirectionsBtn')?.addEventListener('click', showDirections);
+    document.getElementById('hideDirectionsBtn')?.addEventListener('click', hideDirections);
+  });
+
+  async function fetchRoute(from, to, includeAlternatives = true) {
+    const url = `https://router.project-osrm.org/route/v1/driving/${from.lng},${from.lat};${to.lng},${to.lat}?overview=full&geometries=geojson${includeAlternatives ? '&alternatives=true' : ''}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Routing failed');
+    const data = await res.json();
+    if (!data.routes || !data.routes.length) throw new Error('No routes');
+    return data.routes;
+  }
+
+  function clearRouteLayers(isToLocation) {
+    if (isToLocation) {
+      if (routeToLocationMain) { map.removeLayer(routeToLocationMain); routeToLocationMain = null; }
+      routeToLocationAlts.forEach(l => map.removeLayer(l));
+      routeToLocationAlts = [];
+    } else {
+      if (routeLocationMain) { map.removeLayer(routeLocationMain); routeLocationMain = null; }
+      routeLocationAlts.forEach(l => map.removeLayer(l));
+      routeLocationAlts = [];
+    }
+  }
+
+  async function drawRoute(fromLL, toLL, isToLocation) {
+    try {
+      const routes = await fetchRoute({ lat: fromLL.lat, lng: fromLL.lng }, { lat: toLL.lat, lng: toLL.lng }, true);
+      clearRouteLayers(isToLocation);
+      routes.forEach((r, idx) => {
+        const coords = r.geometry.coordinates.map(([lng, lat]) => [lat, lng]);
+        const isMain = idx === 0;
+        const style = isMain
+          ? { color: isToLocation ? 'var(--accent-500)' : 'var(--success-500)', weight: 5 }
+          : { color: isToLocation ? 'var(--accent-500)' : 'var(--success-500)', weight: 3, dashArray: '4,6', opacity: 0.7 };
+        const poly = L.polyline(coords, style).addTo(map);
+        if (isToLocation) {
+          if (isMain) routeToLocationMain = poly; else routeToLocationAlts.push(poly);
+        } else {
+          if (isMain) routeLocationMain = poly; else routeLocationAlts.push(poly);
+        }
+      });
+      fitAllBounds();
+    } catch (e) {
+      // ignore routing errors
+    }
+  }
+
+  // debounce helper to limit routing frequency
+  function debounce(fn, wait) {
+    let t;
+    return function (...args) {
+      clearTimeout(t);
+      t = setTimeout(() => fn.apply(this, args), wait);
+    };
+  }
+  const debouncedRouteToLocation = debounce(() => {
+    if (role === 'worker' && workerMarker && clientMarker) {
+      drawRoute(workerMarker.getLatLng(), clientMarker.getLatLng(), true);
+    }
+  }, 2000);
+
+  function setMarker(isClient, lat, lng) {
+    const pos = [lat, lng];
+    if (isClient) {
+      if (!clientMarker) {
+        clientMarker = L.marker(pos, { title: 'Client', icon: clientIcon }).addTo(map).bindPopup('Client');
+      } else {
+        clientMarker.setLatLng(pos);
+      }
+    } else {
+      if (!workerMarker) {
+        workerMarker = L.marker(pos, { title: 'Worker', icon: workerIcon }).addTo(map).bindPopup('Worker');
+      } else {
+        workerMarker.setLatLng(pos);
+      }
+    }
+    fitAllBounds();
+  }
+
+  // Seed existing last known locations (if present)
+  if (serverData.clientLocation) {
+    setMarker(true, serverData.clientLocation.lat, serverData.clientLocation.lng);
+  }
+  if (serverData.workerLocation) {
+    setMarker(false, serverData.workerLocation.lat, serverData.workerLocation.lng);
+  }
+
+  // Plot location and compute straight-line distance for worker
+  Promise.all([geocode(locationText)]).then(([l]) => {
+    if (l && !locationMarker) {
+      locationMarker = L.marker([l.lat, l.lng], { title: 'Consultation Location' }).addTo(map).bindPopup(`Consultation Location: ${locationText}`);
+    }
+    if (clientMarker && locationMarker) {
+      const km = haversineKm(clientMarker.getLatLng(), locationMarker.getLatLng());
+      updateDistanceControl(km);
+      fitAllBounds();
+      // Draw driving route client -> location
+      drawRoute(clientMarker.getLatLng(), locationMarker.getLatLng(), false);
+    }
+  }).catch(()=>{});
+
+  const socket = (typeof io !== 'undefined') ? io() : null;
+  if (socket) {
+    socket.on('connect', () => {
+      if (requestId) socket.emit('join', { requestId });
+    });
+
+    socket.on('locationUpdate', ({ role: r, lat, lng }) => {
+      setMarker(r === 'client', lat, lng);
+      if (r !== 'client') {
+        // worker moved; refresh route to client
+        debouncedRouteToLocation();
+      }
+    });
+  }
+
+  let intervalId = null;
+  const startBtn = document.getElementById('startBtn');
+  const stopBtn = document.getElementById('stopBtn');
+
+  function startSharing() {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser');
+      return;
+    }
+    if (intervalId !== null) return; // already tracking
+    // Updated timeout to be more appropriate for 1-minute intervals
+    const options = { enableHighAccuracy: true, maximumAge: 30000, timeout: 10000 };
+    const sendOnce = () => {
+      navigator.geolocation.getCurrentPosition(pos => {
+        const { latitude, longitude } = pos.coords;
+        if (socket) socket.emit('locationUpdate', { requestId, role, lat: latitude, lng: longitude });
+      }, err => {
+        console.error(err);
+      }, options);
+    };
+    sendOnce();
+    // Changed from 5000ms (5 seconds) to 60000ms (1 minute)
+    intervalId = setInterval(sendOnce, 60000);
+  }
+
+  function stopSharing() {
+    if (intervalId !== null) {
+      clearInterval(intervalId);
+      intervalId = null;
+      if (socket) socket.emit('stopTracking', { requestId, role });
+    }
+  }
+
+  if (startBtn) startBtn.addEventListener('click', startSharing);
+  if (stopBtn) stopBtn.addEventListener('click', stopSharing);
+
+  window.addEventListener('beforeunload', stopSharing);
+</script>
+
+<!-- Chat panel -->
+<div class="track-panel" id="chatPanel">
+  <div class="chat-header">
+    <h3><i class="fas fa-comments"></i> Messages</h3>
+    <div class="chat-status">
+      <span class="status-indicator online"></span>
+      <span class="status-text">Online</span>
+    </div>
+  </div>
+  
+  <div class="chat-container">
+    <div id="messages" class="messages-container"></div>
+    
+    <form id="msgForm" class="message-form">
+      <div class="input-group">
+        <input id="msgInput" type="text" placeholder="Type your message here..." class="message-input" />
+        <button id="sendBtn" class="btn btn-primary send-button" type="submit">
+          <i class="fas fa-paper-plane"></i> Send
+        </button>
+      </div>
+    </form>
+    
+    <p id="chatNote" class="chat-note"></p>
+  </div>
+</div>
+
+<script>
+  // Chat client logic
+  (function(){
+    const serverDataEl = document.getElementById('track-data');
+    let sdata = {};
+    try { sdata = JSON.parse(serverDataEl.textContent || '{}'); } catch (e) { }
+    const requestId = sdata.requestId;
+    const userId = sdata.userId;
+    const requestStatus = sdata.requestStatus;
+    const allowedStatuses = ['pending','accepted','in-progress'];
+
+    const messagesEl = document.getElementById('messages');
+    const msgForm = document.getElementById('msgForm');
+    const msgInput = document.getElementById('msgInput');
+    const chatNote = document.getElementById('chatNote');
+
+    function appendMessage(msg) {
+      const isOwnMessage = msg.sender && String(msg.sender) === String(userId);
+      const senderName = msg.senderName ? msg.senderName : (msg.sender === userId ? 'You' : 'User');
+      const messageTime = new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${isOwnMessage ? 'own' : 'other'}`;
+      
+      messageDiv.innerHTML = `
+        <div class="message-header">
+          <span class="sender-name">${senderName}</span>
+          <span class="message-time">${messageTime}</span>
+        </div>
+        <div class="message-content">
+          ${escapeHtml(msg.text)}
+        </div>
+      `;
+      
+      messagesEl.appendChild(messageDiv);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    async function loadMessages(){
+      if (!requestId) return;
+      try {
+        const res = await fetch(`/dashboard/requests/${requestId}/messages`);
+        if (!res.ok) return;
+        const data = await res.json();
+        messagesEl.innerHTML = '';
+        data.messages.forEach(m => {
+          // normalize sender name
+          m.senderName = m.sender && m.sender.name ? m.sender.name : (m.sender ? m.sender : 'User');
+          appendMessage(m);
+        });
+      } catch (e) { console.error(e); }
+    }
+
+    async function sendMessage(text){
+      if (!requestId) return;
+      try {
+        const res = await fetch(`/dashboard/requests/${requestId}/messages`, {
+          method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ text })
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(()=>({}));
+          console.error('Send failed', err);
+          return;
+        }
+        msgInput.value = '';
+      } catch (e) { console.error(e); }
+    }
+
+    // Disable messaging if status not allowed
+    if (!allowedStatuses.includes(requestStatus)){
+      msgInput.disabled = true;
+      document.getElementById('sendBtn').disabled = true;
+      chatNote.textContent = 'Messaging is available only after bid acceptance and until service completion.';
+    } else {
+      chatNote.textContent = 'Send a message to communicate with the other party.';
+    }
+
+    msgForm.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const txt = msgInput.value && msgInput.value.trim();
+      if (!txt) return;
+      sendMessage(txt);
+    });
+
+    // Socket listener for newMessage
+    if (typeof io !== 'undefined'){
+      const sock = io();
+      sock.on('connect', ()=>{
+        if (requestId) sock.emit('join', { requestId });
+      });
+      sock.on('newMessage', (payload)=>{
+        if (!payload || !payload.requestId || String(payload.requestId) !== String(requestId)) return;
+        // payload may not include senderName; append directly
+        const msg = { sender: payload.sender, text: payload.text || payload.text, createdAt: payload.createdAt || new Date() };
+        msg.senderName = (payload.sender === userId) ? 'You' : undefined;
+        appendMessage(msg);
+      });
+    }
+
+    // initial load
+    loadMessages();
+  })();
+</script>

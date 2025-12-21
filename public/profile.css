@@ -1,0 +1,921 @@
+/* Modern Color Variables - Light Orange Palette */
+:root {
+  /* Primary Colors - Light Orange */
+  --primary-50: #fff7ed;
+  --primary-100: #ffedd5;
+  --primary-200: #fed7aa;
+  --primary-300: #fdba74;
+  --primary-400: #fb923c;
+  --primary-500: #f97316;
+  --primary-600: #ea580c;
+  --primary-700: #c2410c;
+  --primary-800: #9a3412;
+  --primary-900: #7c2d12;
+  
+  /* Secondary Colors - Warm Terracotta */
+  --secondary-50: #fdf2f2;
+  --secondary-100: #fde9e9;
+  --secondary-200: #fbd5d5;
+  --secondary-300: #f8b4b4;
+  --secondary-400: #f98c8c;
+  --secondary-500: #f46d6d;
+  --secondary-600: #e55353;
+  --secondary-700: #d23a3a;
+  --secondary-800: #b92525;
+  --secondary-900: #9b2020;
+  
+  /* Accent Colors - Warm Gold */
+  --accent-50: #fffbeb;
+  --accent-100: #fef3c7;
+  --accent-200: #fde68a;
+  --accent-300: #fcd34d;
+  --accent-400: #fbbf24;
+  --accent-500: #f59e0b;
+  --accent-600: #d97706;
+  --accent-700: #b45309;
+  --accent-800: #92400e;
+  --accent-900: #78350f;
+  
+  /* Success Colors - Sage Green */
+  --success-50: #f0fdf4;
+  --success-100: #dcfce7;
+  --success-200: #bbf7d0;
+  --success-300: #86efac;
+  --success-400: #4ade80;
+  --success-500: #22c55e;
+  --success-600: #16a34a;
+  --success-700: #15803d;
+  --success-800: #166534;
+  --success-900: #14532d;
+  
+  /* Warning Colors - Amber */
+  --warning-50: #fffbeb;
+  --warning-100: #fef3c7;
+  --warning-200: #fde68a;
+  --warning-300: #fcd34d;
+  --warning-400: #fbbf24;
+  --warning-500: #f59e0b;
+  --warning-600: #d97706;
+  --warning-700: #b45309;
+  --warning-800: #92400e;
+  --warning-900: #78350f;
+  
+  /* Error Colors - Coral Red */
+  --error-50: #fef2f2;
+  --error-100: #fee2e2;
+  --error-200: #fecaca;
+  --error-300: #fca5a5;
+  --error-400: #f87171;
+  --error-500: #ef4444;
+  --error-600: #dc2626;
+  --error-700: #b91c1c;
+  --error-800: #991b1b;
+  --error-900: #7f1d1d;
+  
+  /* Neutral Colors - Warm Grays */
+  --neutral-50: #fafaf9;
+  --neutral-100: #f5f5f4;
+  --neutral-200: #e7e5e4;
+  --neutral-300: #d6d3d1;
+  --neutral-400: #a8a29e;
+  --neutral-500: #78716c;
+  --neutral-600: #57534e;
+  --neutral-700: #44403c;
+  --neutral-800: #292524;
+  --neutral-900: #1c1917;
+  
+  /* Legacy variables for backward compatibility */
+  --primary-color: var(--primary-600);
+}
+
+/* Profile Page Styles - Modern Enhanced Style */
+.profile-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1.5rem;
+  animation: fadeInUp 0.6s ease-out;
+  position: relative;
+}
+
+.profile-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, var(--primary-500), var(--accent-500), var(--secondary-500));
+  border-radius: 0 0 12px 12px;
+}
+
+.profile-wrapper {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--primary-200);
+  margin-top: var(--space-3);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Alert Messages - Enhanced Style */
+.alert {
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  box-shadow: var(--shadow-md);
+  border: 2px solid transparent;
+  transform: translateY(0);
+  transition: all var(--transition-normal);
+}
+
+.alert:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+
+.alert-success {
+  background-color: var(--success-100);
+  color: var(--success-800);
+  border: 2px solid var(--success-300);
+}
+
+.alert-danger {
+  background-color: var(--error-100);
+  color: var(--error-800);
+  border: 2px solid var(--error-300);
+}
+
+.profile-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--primary-300);
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+  transform: translateY(0);
+  transition: all var(--transition-normal);
+}
+
+.profile-header:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-2xl);
+  border-color: var(--primary-300);
+}
+
+.profile-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 10px;
+  background: linear-gradient(90deg, var(--primary-500), var(--accent-500), var(--secondary-500));
+}
+
+.profile-header h1 {
+  color: var(--primary-700);
+  margin-bottom: 1.2rem;
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.profile-content {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  animation: slideInLeft 0.6s ease-out;
+  margin-top: var(--space-4);
+}
+
+.profile-sidebar {
+  flex: 1;
+  min-width: 250px;
+  max-width: 300px;
+  transform: translateY(0);
+  transition: all var(--transition-fast);
+  position: relative;
+}
+
+.profile-sidebar:hover {
+  transform: translateY(-5px);
+}
+
+.profile-main {
+  flex: 3;
+  min-width: 350px;
+  transform: translateY(0);
+  transition: all var(--transition-fast);
+  position: relative;
+}
+
+.profile-main:hover {
+  transform: translateY(-5px);
+}
+
+.profile-info {
+  background: rgba(255, 255, 255, 0.97);
+  border-radius: var(--radius-xl);
+  padding: 2rem;
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+  margin-bottom: 2rem;
+  border: 1px solid var(--primary-300);
+  position: relative;
+  overflow: hidden;
+  transform: translateY(0);
+  transition: all var(--transition-normal);
+}
+
+.profile-info:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-2xl);
+  border-color: var(--primary-300);
+}
+
+.profile-info::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background: linear-gradient(90deg, var(--primary-500), var(--accent-500));
+}
+
+.profile-avatar {
+  font-size: 4rem;
+  color: var(--primary-600);
+  margin-bottom: 1.5rem;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary-50);
+  border-radius: 50%;
+  margin: 0 auto 1.5rem;
+  border: 2px solid var(--primary-300);
+  box-shadow: var(--shadow-md);
+}
+
+.profile-info h2 {
+  margin-bottom: 1rem;
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: var(--neutral-900);
+}
+
+.role-badge {
+  display: inline-block;
+  padding: 0.5rem 1.5rem;
+  border-radius: 30px;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow-md);
+  border: 1px solid transparent;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all var(--transition-fast);
+  transform: scale(1);
+}
+
+.role-badge:hover {
+  transform: scale(1.08);
+  box-shadow: var(--shadow-xl);
+}
+
+.role-badge.transporter {
+    background: linear-gradient(135deg, var(--primary-100), var(--primary-200));
+    color: var(--primary-800);
+    border: 2px solid var(--primary-300);
+}
+
+.role-badge.shipper {
+    background: linear-gradient(135deg, var(--success-100), var(--success-200));
+    color: var(--success-800);
+    border: 2px solid var(--success-300);
+}
+
+.profile-info .email {
+  color: var(--neutral-600);
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+.profile-info .member-since {
+  font-size: 0.9rem;
+  color: var(--neutral-500);
+  font-weight: 500;
+}
+
+.profile-nav {
+  background: rgba(255, 255, 255, 0.97);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  transform: translateY(0);
+  transition: all var(--transition-fast);
+  border: 1px solid var(--primary-200);
+  position: relative;
+}
+
+.profile-nav::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, var(--primary-500), var(--accent-500));
+}
+
+.profile-nav:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-xl);
+  border-color: var(--primary-300);
+}
+
+.profile-nav a {
+  display: block;
+  padding: 1rem 1.5rem;
+  color: var(--neutral-700);
+  border-bottom: 1px solid var(--neutral-300);
+  transition: all var(--transition-fast);
+  font-size: 1rem;
+  font-weight: 500;
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-nav a:last-child {
+  border-bottom: none;
+}
+
+.profile-nav a::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--primary-500);
+  transform: scaleY(0);
+  transition: transform 0.3s ease;
+}
+
+.profile-nav a:hover {
+  background: var(--primary-50);
+  color: var(--primary-700);
+  transform: translateX(8px);
+}
+
+.profile-nav a:hover::before {
+  transform: scaleY(1);
+}
+
+.profile-nav a.active {
+  background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
+  color: white;
+  font-weight: 700;
+  box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.2);
+}
+
+.profile-nav a.active::before {
+  background: var(--accent-300);
+  transform: scaleY(1);
+}
+
+.profile-section {
+  background: rgba(255, 255, 255, 0.97);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  box-shadow: var(--shadow-md);
+  display: none;
+  transform: translateY(0);
+  transition: all var(--transition-normal);
+  border: 1px solid var(--primary-200);
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, var(--primary-500), var(--accent-500));
+}
+
+.profile-section:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-xl);
+  border-color: var(--primary-300);
+}
+
+.profile-section.active {
+  display: block;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.profile-section h3 {
+  color: var(--primary-700);
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--neutral-300);
+  font-size: 1.8rem;
+  letter-spacing: -0.015em;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.profile-section h3 i {
+  color: var(--primary-600);
+}
+
+.profile-form .form-group {
+  margin-bottom: 1.5rem;
+}
+
+.profile-form label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: var(--neutral-800);
+  font-size: 1rem;
+}
+
+.profile-form input {
+  width: 100%;
+  padding: 0.9rem;
+  border: 1px solid var(--neutral-400);
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  transition: all var(--transition-fast);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.profile-form input:focus {
+  outline: none;
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 4px var(--primary-100);
+  transform: translateY(-2px);
+}
+
+.profile-form input:valid {
+  border-color: var(--success-500);
+}
+
+.profile-form input:invalid:not(:focus):not(:placeholder-shown) {
+  border-color: var(--error-500);
+}
+
+.form-actions {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px dashed var(--neutral-300);
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.form-actions .btn {
+  min-width: 140px;
+  padding: var(--space-3) var(--space-5);
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: var(--radius-lg);
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-md);
+  transform: translateY(0);
+}
+
+.form-actions .btn:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+
+.form-actions .btn:active {
+  transform: translateY(1px);
+}
+
+.password-section {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 2px solid var(--neutral-200);
+}
+
+.password-section h4 {
+  margin-bottom: 1.75rem;
+  color: var(--neutral-800);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.danger-zone {
+  margin-top: 3rem;
+  padding: 2rem;
+  border: 2px solid var(--error-200);
+  border-radius: var(--radius-xl);
+  background: linear-gradient(135deg, var(--error-50), var(--error-100));
+  position: relative;
+  overflow: hidden;
+}
+
+.danger-zone::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, var(--error-500), var(--error-600));
+}
+
+.danger-zone h4 {
+  color: var(--error-800);
+  margin-bottom: 1.25rem;
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.danger-zone p {
+  margin-bottom: 2rem;
+  color: var(--neutral-700);
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, var(--error-500), var(--error-600));
+  color: white;
+  font-weight: 700;
+  border: none;
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+}
+
+.btn-danger:hover {
+  background: linear-gradient(135deg, var(--error-600), var(--error-700));
+  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+  transform: translateY(-3px);
+}
+
+/* Booking History Styles - Modern Enhanced */
+.booking-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.booking-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--primary-200);
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-fast);
+  transform: translateY(0);
+  position: relative;
+}
+
+.booking-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, var(--primary-500), var(--accent-500));
+}
+
+.booking-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-xl);
+  border-color: var(--primary-300);
+}
+
+.booking-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.2rem 1.5rem;
+  background: var(--primary-50);
+  border-bottom: 1px solid var(--neutral-300);
+}
+
+.booking-header h4 {
+  margin: 0;
+  color: var(--neutral-900);
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.status-badge {
+  padding: 0.4rem 1rem;
+  border-radius: 30px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid transparent;
+  transition: all var(--transition-fast);
+}
+
+.status-badge:hover {
+  transform: scale(1.05);
+}
+
+.status-badge.pending {
+  background: linear-gradient(135deg, var(--warning-100), var(--warning-200));
+  color: var(--warning-800);
+  border: 2px solid var(--warning-300);
+}
+
+.status-badge.confirmed {
+  background: linear-gradient(135deg, var(--success-100), var(--success-200));
+  color: var(--success-800);
+  border: 2px solid var(--success-300);
+}
+
+.status-badge.in-transit {
+  background: linear-gradient(135deg, var(--primary-100), var(--primary-200));
+  color: var(--primary-800);
+  border: 2px solid var(--primary-300);
+}
+
+.status-badge.delivered {
+  background: linear-gradient(135deg, var(--success-100), var(--success-200));
+  color: var(--success-800);
+  border: 2px solid var(--success-300);
+}
+
+.status-badge.cancelled {
+  background: linear-gradient(135deg, var(--error-100), var(--error-200));
+  color: var(--error-800);
+  border: 2px solid var(--error-300);
+}
+
+.booking-details {
+  padding: 1.5rem;
+}
+
+.booking-route {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: var(--neutral-50);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--neutral-200);
+}
+
+.location {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+}
+
+.location i {
+  color: var(--primary-600);
+  margin-top: 0.3rem;
+  font-size: 1.2rem;
+}
+
+.location .label {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--neutral-600);
+  margin-bottom: 0.3rem;
+  font-weight: 600;
+}
+
+.location .value {
+  font-weight: 700;
+  color: var(--neutral-800);
+  font-size: 1.1rem;
+}
+
+.route-line {
+  margin-left: 1rem;
+  color: var(--neutral-400);
+  font-size: 1.5rem;
+}
+
+.booking-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.info-item {
+  min-width: 120px;
+  padding: 0.75rem;
+  background: var(--neutral-100);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--neutral-300);
+  transition: all var(--transition-fast);
+}
+
+.info-item:hover {
+  background: var(--primary-50);
+  transform: translateY(-3px);
+  border-color: var(--primary-200);
+}
+
+.info-item .label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--neutral-600);
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+}
+
+.info-item .value {
+  font-weight: 600;
+  color: var(--neutral-800);
+  font-size: 1.1rem;
+}
+
+.booking-actions {
+  padding: 1.2rem 1.5rem;
+  border-top: 1px solid var(--neutral-300);
+  background: var(--neutral-50);
+  text-align: right;
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.booking-actions .btn {
+  min-width: 120px;
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+  border-radius: var(--radius-lg);
+  font-weight: 500;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--neutral-500);
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: var(--radius-xl);
+  border: 2px dashed var(--neutral-300);
+}
+
+.empty-state i {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+  color: var(--neutral-400);
+}
+
+.empty-state h3 {
+  font-size: 1.8rem;
+  color: var(--neutral-700);
+  margin-bottom: 1rem;
+}
+
+.empty-state p {
+  font-size: 1.1rem;
+  max-width: 500px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .profile-container {
+    padding: 0 1rem;
+  }
+  
+  .profile-wrapper {
+    padding: var(--space-4);
+  }
+  
+  .profile-header {
+    padding: 2rem;
+  }
+  
+  .profile-header h1 {
+    font-size: 2.5rem;
+  }
+  
+  .profile-content {
+    flex-direction: column;
+    gap: 2rem;
+  }
+  
+  .profile-sidebar {
+    max-width: 100%;
+  }
+  
+  .profile-info {
+    padding: 2rem;
+  }
+  
+  .profile-avatar {
+    width: 120px;
+    height: 120px;
+    font-size: 4rem;
+  }
+  
+  .profile-section {
+    padding: 2rem;
+  }
+  
+  .profile-section h3 {
+    font-size: 1.8rem;
+  }
+  
+  .booking-header h4 {
+    font-size: 1.2rem;
+  }
+  
+  .booking-details {
+    padding: 1.5rem;
+  }
+  
+  .booking-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .booking-actions .btn {
+    width: 100%;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .form-actions .btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-header {
+    padding: 1.5rem;
+  }
+  
+  .profile-header h1 {
+    font-size: 2rem;
+  }
+  
+  .profile-info {
+    padding: 1.5rem;
+  }
+  
+  .profile-avatar {
+    width: 100px;
+    height: 100px;
+    font-size: 3rem;
+  }
+  
+  .role-badge {
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+  }
+  
+  .profile-section {
+    padding: 1.5rem;
+  }
+  
+  .profile-section h3 {
+    font-size: 1.5rem;
+  }
+  
+  .profile-form input {
+    padding: 0.9rem;
+  }
+  
+  .booking-header {
+    padding: 1rem;
+  }
+  
+  .booking-details {
+    padding: 1rem;
+  }
+  
+  .info-item {
+    min-width: 100%;
+  }
+}

@@ -1,0 +1,180 @@
+<div class="search-results-header">
+  <h1>Available Workers</h1>
+  <p>Found <%= results.length %> worker(s) matching your search</p>
+</div>
+
+<div class="search-results-container">
+  <% if (results.length > 0) { %>
+    <!-- Map Container -->
+    <div id="searchMap" style="height: 400px; margin-bottom: 2rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);"></div>
+    
+    <div class="card-container">
+      <% results.forEach(worker => { %>
+        <!-- Worker Result -->
+        <div class="card search-result-card">
+          <div class="card-header">
+            <h3><%= worker.workerName %></h3>
+            <span class="result-type worker">Worker</span>
+          </div>
+          <div class="card-body">
+            <div class="card-item">
+              <i class="fas fa-map-marker-alt"></i>
+              <span><strong>Location:</strong> <%= worker.location %></span>
+            </div>
+            <div class="card-item">
+              <i class="fas fa-tools"></i>
+              <span><strong>Skills:</strong> <%= worker.skills ? worker.skills.join(', ') : 'N/A' %></span>
+            </div>
+            <div class="card-item">
+              <i class="fas fa-clock"></i>
+              <span><strong>Experience:</strong> <%= worker.experience || 'N/A' %> years</span>
+            </div>
+            <div class="card-item">
+              <i class="fas fa-rupee-sign"></i>
+              <span><strong>Rate:</strong> ₹<%= worker.hourlyRate || 'Negotiable' %>/hour</span>
+            </div>
+            <% if (worker.distance !== null) { %>
+              <div class="card-item">
+                <i class="fas fa-road"></i>
+                <span><strong>Distance:</strong> <%= worker.distance.toFixed(1) %> km away</span>
+              </div>
+            <% } %>
+            <a href="/workers/<%= worker._id %>" class="btn">View Profile</a>
+            
+            <% if (user && user.role === 'client') { %>
+              <button class="btn btn-primary" onclick="showRequestForm('<%= worker._id %>')">
+                <i class="fas fa-paper-plane"></i> Send Request
+              </button>
+            <% } else if (!user) { %>
+              <a href="/auth/login" class="btn btn-primary">
+                <i class="fas fa-sign-in-alt"></i> Login to Send Request
+              </a>
+            <% } %>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+    
+    <!-- Request Form Modal -->
+    <div id="requestModal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <span class="close" onclick="closeRequestForm()">&times;</span>
+        <h2>Send Request to Worker</h2>
+        <form id="requestForm" action="/dashboard/send-request" method="POST">
+          <input type="hidden" id="workerId" name="workerId" value="">
+          
+          <div class="form-group">
+            <label for="date"><i class="fas fa-calendar-alt"></i> Preferred Date:</label>
+            <input type="date" id="date" name="date" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="time"><i class="fas fa-clock"></i> Preferred Time:</label>
+            <input type="time" id="time" name="time" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="requirements"><i class="fas fa-align-left"></i> Requirements:</label>
+            <textarea id="requirements" name="requirements" placeholder="Please describe your requirements in detail..." rows="4" required></textarea>
+          </div>
+          
+          <div class="form-actions">
+            <button type="button" class="btn btn-outline" onclick="closeRequestForm()">Cancel</button>
+            <button type="submit" class="btn btn-primary">Send Request</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    
+    <!-- Map Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script>
+      // Initialize map after page loads
+      document.addEventListener('DOMContentLoaded', function() {
+        // Create map centered on India
+        const map = L.map('searchMap').setView([20.5937, 78.9629], 5);
+        
+        // Add tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+        
+        // Add markers for each worker
+        const workerData = <%- JSON.stringify(results) %>;
+        const clientLocation = <%- JSON.stringify(clientLocation) %>;
+        
+        // Add client marker if location is available
+        let clientMarker = null;
+        if (clientLocation) {
+          clientMarker = L.marker([clientLocation.lat, clientLocation.lng], {
+            title: 'Your Location'
+          }).addTo(map).bindPopup('Your Location').openPopup();
+        }
+        
+        // Add worker markers
+        const workerMarkers = [];
+        workerData.forEach(worker => {
+          if (worker.coordinates) {
+            const marker = L.marker([worker.coordinates.lat, worker.coordinates.lng], {
+              title: worker.workerName
+            }).addTo(map);
+            
+            // Create popup content
+            let popupContent = `<b>${worker.workerName}</b><br>`;
+            popupContent += `Skills: ${worker.skills ? worker.skills.join(', ') : 'N/A'}<br>`;
+            popupContent += `Location: ${worker.location}<br>`;
+            if (worker.distance !== null) {
+              popupContent += `Distance: ${worker.distance.toFixed(1)} km<br>`;
+            }
+            popupContent += `<button onclick="showRequestForm('${worker._id}')" style="margin-top: 5px;">Send Request</button>`;
+            
+            marker.bindPopup(popupContent);
+            workerMarkers.push(marker);
+          }
+        });
+        
+        // Fit map bounds to show all markers
+        const allMarkers = [];
+        if (clientMarker) {
+          allMarkers.push(clientMarker);
+        }
+        allMarkers.push(...workerMarkers);
+        
+        if (allMarkers.length > 0) {
+          const group = new L.featureGroup(allMarkers);
+          map.fitBounds(group.getBounds().pad(0.1));
+        }
+      });
+      
+      function showRequestForm(workerId) {
+        document.getElementById('workerId').value = workerId;
+        document.getElementById('requestModal').style.display = 'block';
+        
+        // Set minimum date to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('date').min = today;
+      }
+      
+      function closeRequestForm() {
+        document.getElementById('requestModal').style.display = 'none';
+        document.getElementById('requestForm').reset();
+      }
+      
+      // Close modal when clicking outside of it
+      window.onclick = function(event) {
+        const modal = document.getElementById('requestModal');
+        if (event.target == modal) {
+          closeRequestForm();
+        }
+      }
+    </script>
+  <% } else { %>
+    <div class="empty-state">
+      <i class="fas fa-search fa-3x"></i>
+      <h3>No workers found</h3>
+      <p>Try adjusting your search criteria.</p>
+      <a href="/" class="btn btn-primary">Back to Home</a>
+    </div>
+  <% } %>
+</div>
