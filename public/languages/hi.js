@@ -41,7 +41,7 @@ window.translations = {
     termsOfService: "सेवा की शर्तें",
     privacyPolicy: "गोपनीयता नीति",
     contact: "संपर्क करें",
-    copyright: "© 2025 T2YD. सर्वाधिकार सुरक्षित।",
+    copyright: "© 2025 WorkConnect. सर्वाधिकार सुरक्षित।",
     
     // Language Names
     english: "English",

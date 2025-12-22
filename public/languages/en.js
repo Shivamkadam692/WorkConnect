@@ -41,7 +41,7 @@ window.translations = {
     termsOfService: "Terms of Service",
     privacyPolicy: "Privacy Policy",
     contact: "Contact",
-    copyright: "© 2025 T2YD. All rights reserved.",
+    copyright: "© 2025 WorkConnect. All rights reserved.",
     
     // Language Names
     english: "English",

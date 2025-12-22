@@ -66,7 +66,7 @@ window.translations = {
     termsOfService: "सेवेच्या अटी",
     privacyPolicy: "गोपनीयता धोरण",
     contact: "संपर्क साधा",
-    copyright: "© 2025 T2YD. सर्व हक्क राखीव.",
+    copyright: "© 2025 WorkConnect. सर्व हक्क राखीव.",
 
     // Language Names
     english: "English",

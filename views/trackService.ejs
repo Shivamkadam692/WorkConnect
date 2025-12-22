@@ -463,7 +463,7 @@
   role: roleComputed,
   userId: _user && _user._id ? String(_user._id) : null,
   requestStatus: _request && _request.status ? _request.status : null,
-  locationText: _request.service && _request.service.location ? _request.service.location : ''
+  locationText: _request.service && _request.service.location ? _request.service.location : '',
   clientLocation: (_request && _request.clientLocation && _request.clientLocation.lat != null) ? { lat: _request.clientLocation.lat, lng: _request.clientLocation.lng } : null,
   workerLocation: (_request && _request.workerLocation && _request.workerLocation.lat != null) ? { lat: _request.workerLocation.lat, lng: _request.workerLocation.lng } : null
 }) %></script>
@@ -482,8 +482,7 @@
   const locationText = serverData.locationText || '';
 
   // Initialize map with reasonable zoom
-  const map = L.map('map').setView([20.5937, 78.9629], 6);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+  let map;
 
   // Explicit icons so markers are always visible
   const defaultIconUrl = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png';
@@ -717,7 +716,7 @@
       
       const coords = route.geometry.coordinates.map(([lng, lat]) => [lat, lng]);
       directionsPolyline = L.polyline(coords, {
-        color: 'var(--primary-500)'
+        color: 'var(--primary-500)',
         weight: 6,
         opacity: 0.8
       }).addTo(map);
@@ -733,6 +732,10 @@
 
   // Event listeners for map controls (moved to the end to ensure all functions are defined)
   document.addEventListener('DOMContentLoaded', function() {
+    // Initialize map with reasonable zoom
+    map = L.map('map').setView([20.5937, 78.9629], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+    
     document.getElementById('centerMeBtn')?.addEventListener('click', centerOnMe);
     document.getElementById('centerWorkerBtn')?.addEventListener('click', centerOnWorker);
     document.getElementById('centerClientBtn')?.addEventListener('click', centerOnClient);
@@ -741,6 +744,81 @@
     // Event listeners for directions
     document.getElementById('showDirectionsBtn')?.addEventListener('click', showDirections);
     document.getElementById('hideDirectionsBtn')?.addEventListener('click', hideDirections);
+    
+    // Seed existing last known locations (if present)
+    if (serverData.clientLocation) {
+      setMarker(true, serverData.clientLocation.lat, serverData.clientLocation.lng);
+    }
+    if (serverData.workerLocation) {
+      setMarker(false, serverData.workerLocation.lat, serverData.workerLocation.lng);
+    }
+
+    // Plot location and compute straight-line distance for worker
+    Promise.all([geocode(locationText)]).then(([l]) => {
+      if (l && !locationMarker) {
+        locationMarker = L.marker([l.lat, l.lng], { title: 'Consultation Location' }).addTo(map).bindPopup(`Consultation Location: ${locationText}`);
+      }
+      if (clientMarker && locationMarker) {
+        const km = haversineKm(clientMarker.getLatLng(), locationMarker.getLatLng());
+        updateDistanceControl(km);
+        fitAllBounds();
+        // Draw driving route client -> location
+        drawRoute(clientMarker.getLatLng(), locationMarker.getLatLng(), false);
+      }
+    }).catch(()=>{});
+
+    const socket = (typeof io !== 'undefined') ? io() : null;
+    if (socket) {
+      socket.on('connect', () => {
+        if (requestId) socket.emit('join', { requestId });
+      });
+
+      socket.on('locationUpdate', ({ role: r, lat, lng }) => {
+        setMarker(r === 'client', lat, lng);
+        if (r !== 'client') {
+          // worker moved; refresh route to client
+          debouncedRouteToLocation();
+        }
+      });
+    }
+
+    let intervalId = null;
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+
+    function startSharing() {
+      if (!navigator.geolocation) {
+        alert('Geolocation is not supported by your browser');
+        return;
+      }
+      if (intervalId !== null) return; // already tracking
+      // Updated timeout to be more appropriate for 1-minute intervals
+      const options = { enableHighAccuracy: true, maximumAge: 30000, timeout: 10000 };
+      const sendOnce = () => {
+        navigator.geolocation.getCurrentPosition(pos => {
+          const { latitude, longitude } = pos.coords;
+          if (socket) socket.emit('locationUpdate', { requestId, role, lat: latitude, lng: longitude });
+        }, err => {
+          console.error(err);
+        }, options);
+      };
+      sendOnce();
+      // Changed from 5000ms (5 seconds) to 60000ms (1 minute)
+      intervalId = setInterval(sendOnce, 60000);
+    }
+
+    function stopSharing() {
+      if (intervalId !== null) {
+        clearInterval(intervalId);
+        intervalId = null;
+        if (socket) socket.emit('stopTracking', { requestId, role });
+      }
+    }
+
+    if (startBtn) startBtn.addEventListener('click', startSharing);
+    if (stopBtn) stopBtn.addEventListener('click', stopSharing);
+
+    window.addEventListener('beforeunload', stopSharing);
   });
 
   async function fetchRoute(from, to, includeAlternatives = true) {
@@ -819,80 +897,7 @@
     fitAllBounds();
   }
 
-  // Seed existing last known locations (if present)
-  if (serverData.clientLocation) {
-    setMarker(true, serverData.clientLocation.lat, serverData.clientLocation.lng);
-  }
-  if (serverData.workerLocation) {
-    setMarker(false, serverData.workerLocation.lat, serverData.workerLocation.lng);
-  }
 
-  // Plot location and compute straight-line distance for worker
-  Promise.all([geocode(locationText)]).then(([l]) => {
-    if (l && !locationMarker) {
-      locationMarker = L.marker([l.lat, l.lng], { title: 'Consultation Location' }).addTo(map).bindPopup(`Consultation Location: ${locationText}`);
-    }
-    if (clientMarker && locationMarker) {
-      const km = haversineKm(clientMarker.getLatLng(), locationMarker.getLatLng());
-      updateDistanceControl(km);
-      fitAllBounds();
-      // Draw driving route client -> location
-      drawRoute(clientMarker.getLatLng(), locationMarker.getLatLng(), false);
-    }
-  }).catch(()=>{});
-
-  const socket = (typeof io !== 'undefined') ? io() : null;
-  if (socket) {
-    socket.on('connect', () => {
-      if (requestId) socket.emit('join', { requestId });
-    });
-
-    socket.on('locationUpdate', ({ role: r, lat, lng }) => {
-      setMarker(r === 'client', lat, lng);
-      if (r !== 'client') {
-        // worker moved; refresh route to client
-        debouncedRouteToLocation();
-      }
-    });
-  }
-
-  let intervalId = null;
-  const startBtn = document.getElementById('startBtn');
-  const stopBtn = document.getElementById('stopBtn');
-
-  function startSharing() {
-    if (!navigator.geolocation) {
-      alert('Geolocation is not supported by your browser');
-      return;
-    }
-    if (intervalId !== null) return; // already tracking
-    // Updated timeout to be more appropriate for 1-minute intervals
-    const options = { enableHighAccuracy: true, maximumAge: 30000, timeout: 10000 };
-    const sendOnce = () => {
-      navigator.geolocation.getCurrentPosition(pos => {
-        const { latitude, longitude } = pos.coords;
-        if (socket) socket.emit('locationUpdate', { requestId, role, lat: latitude, lng: longitude });
-      }, err => {
-        console.error(err);
-      }, options);
-    };
-    sendOnce();
-    // Changed from 5000ms (5 seconds) to 60000ms (1 minute)
-    intervalId = setInterval(sendOnce, 60000);
-  }
-
-  function stopSharing() {
-    if (intervalId !== null) {
-      clearInterval(intervalId);
-      intervalId = null;
-      if (socket) socket.emit('stopTracking', { requestId, role });
-    }
-  }
-
-  if (startBtn) startBtn.addEventListener('click', startSharing);
-  if (stopBtn) stopBtn.addEventListener('click', stopSharing);
-
-  window.addEventListener('beforeunload', stopSharing);
 </script>
 
 <!-- Chat panel -->
