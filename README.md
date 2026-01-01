@@ -124,7 +124,7 @@ WorkConnect/
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js (v16 or higher, v22+ recommended)
+- Node.js (v16 or higher, v22+ recommended
 - MongoDB (local or Atlas)
 - npm (or yarn)
 
