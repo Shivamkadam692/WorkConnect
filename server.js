@@ -30,7 +30,6 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 
-// Make io globally available for notification service
 global.io = io;
 
 connectDB();
