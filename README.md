@@ -1,6 +1,6 @@
 # WorkConnect - Professional Services Platform
 
-A modern, multilingual platform built with Node.js/Express backend and EJS frontend, featuring real-time notifications, request management, language support, responsive design, SEO optimization.
+A modern, multilingual platform built with Node.js/Express backend and EJS frontend, featuring real-time notifications, request management, language support, responsive design
 ## 🌟 Key Features
 
 - 👥 **Professional Services**: Connect clients with skilled workers based on skills and location
